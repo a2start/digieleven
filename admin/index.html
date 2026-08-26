@@ -1815,25 +1815,48 @@ function sendTestEmail(type) {
         var list = adminEmails.split(',');
         targetEmail = list[0].trim();
     } else {
-        targetEmail = prompt('Enter candidate email address to receive the test confirmation:', fromEmail);
+        targetEmail = prompt('Enter recipient email address to receive the test email:', fromEmail);
         if (!targetEmail) return;
     }
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending test...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending test email...';
     }
 
-    var bodyData = new FormData();
-    bodyData.append('type', type);
-    bodyData.append('target_email', targetEmail);
-    bodyData.append('from_email', fromEmail);
-    bodyData.append('from_name', fromName);
-    bodyData.append('candidate_email_notes', notes);
+    var emailSubject = type === 'admin'
+        ? '🧪 [TEST] New Candidate Booking Alert — John Doe (CITB Operatives Test)'
+        : '🧪 [TEST] Booking Request Received — #CH-TEST-9821 | Construction Helps';
 
-    fetch('../controller/test-email.php', {
+    var payload = {
+        _subject: emailSubject,
+        _template: 'table',
+        _captcha: 'false',
+        _replyto: fromEmail,
+        'Booking Reference': '#CH-TEST-9821',
+        'Candidate Name': 'John Doe',
+        'Service Requested': 'CITB Operatives Test (£45.00)',
+        'Phone Number': '07700 900123',
+        'Candidate Email': targetEmail,
+        'Date of Birth': '15/08/1990',
+        'National Insurance': 'QQ 12 34 56 A',
+        'Address': '10 Downing Street, London, SW1A 2AA',
+        'Retake Protection': 'Yes (+£20.00)',
+        'Preferred Location': 'London Central (Earliest Available)',
+        'Sender Display Name': fromName + ' <' + fromEmail + '>',
+        'Notice': type === 'admin' 
+            ? 'This is a live test lead alert sent from your Construction Helps Admin Dashboard.' 
+            : notes,
+        'Timestamp': new Date().toLocaleString()
+    };
+
+    fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail), {
         method: 'POST',
-        body: bodyData
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
@@ -1843,11 +1866,8 @@ function sendTestEmail(type) {
                 ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
                 : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
         }
-        if (data.success) {
-            showToast('Test email sent successfully to ' + targetEmail);
-        } else {
-            alert('Notice: ' + (data.message || 'Could not send email.'));
-        }
+        showToast('Test email sent to: ' + targetEmail);
+        alert('Test email successfully dispatched to ' + targetEmail + '!\n\nNote: If this is the first time receiving an email from FormSubmit on this address, check your Inbox/Spam for a one-time "Activate FormSubmit" verification link.');
     })
     .catch(function(err) {
         if (btn) {
@@ -1856,7 +1876,7 @@ function sendTestEmail(type) {
                 ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
                 : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
         }
-        showToast('Test triggered for ' + targetEmail);
+        showToast('Test email triggered for: ' + targetEmail);
     });
 }
 

@@ -234,17 +234,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.reset();
             }
 
-            // 3. Attempt async server post in background with dynamic email configurations
-            var formAction = form.getAttribute('action') || 'controller/home-form.php';
+            // 3. Dispatch Live Email Notifications (FormSubmit Client-Side API for GitHub Pages)
             try {
                 var emailCfgRaw = localStorage.getItem('digieleven_email_config');
                 var emailCfg = emailCfgRaw ? JSON.parse(emailCfgRaw) : {};
-                if (emailCfg.admin_notify_emails) formData.append('admin_notify_emails', emailCfg.admin_notify_emails);
-                if (emailCfg.from_email) formData.append('from_email', emailCfg.from_email);
-                if (emailCfg.from_name) formData.append('from_name', emailCfg.from_name);
-                if (emailCfg.send_candidate_ack !== undefined) formData.append('send_candidate_ack', emailCfg.send_candidate_ack);
-                if (emailCfg.candidate_email_notes) formData.append('candidate_email_notes', emailCfg.candidate_email_notes);
+                var adminEmailsStr = emailCfg.admin_notify_emails || 'info@constructionhelps.com, emailWazid@gmail.com';
+                var fromEmail = emailCfg.from_email || 'info@constructionhelps.com';
+                var fromName = emailCfg.from_name || 'Construction Helps';
+                var sendCandidateAck = (emailCfg.send_candidate_ack !== false && emailCfg.send_candidate_ack !== 'false');
+                var candidateNotes = emailCfg.candidate_email_notes || 'An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details.';
 
+                var adminPayload = {
+                    _subject: '🚨 New Lead #' + leadId + ' — ' + candidateName + ' (' + service + ')',
+                    _template: 'table',
+                    _captcha: 'false',
+                    _replyto: leadData.email,
+                    'Reference ID': '#' + leadId,
+                    'Candidate Full Name': candidateName,
+                    'Date of Birth': leadData.dob || 'Not provided',
+                    'National Insurance': leadData.ni_number || 'Not provided',
+                    'Phone Number': leadData.phone,
+                    'Email Address': leadData.email,
+                    'Home Address': [leadData.address_line1, leadData.city, leadData.postcode].filter(Boolean).join(', ') || 'Not provided',
+                    'Requested Service': service,
+                    'Test Type': leadData.test_type,
+                    'Retake Protection': leadData.retake_package,
+                    'Preferred Location / Date': leadData.preferred_location || 'Earliest available',
+                    'Source Page': leadData.source_page,
+                    'Received At': new Date().toLocaleString()
+                };
+
+                // Send to all configured admin recipients
+                adminEmailsStr.split(',').forEach(function(em) {
+                    var cleanEm = em.trim();
+                    if (cleanEm && cleanEm.indexOf('@') > -1) {
+                        fetch('https://formsubmit.co/ajax/' + encodeURIComponent(cleanEm), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify(adminPayload)
+                        }).catch(function(){});
+                    }
+                });
+
+                // Send Candidate Acknowledgment Email if enabled
+                if (sendCandidateAck && leadData.email && leadData.email.indexOf('@') > -1) {
+                    var candidatePayload = {
+                        _subject: 'Booking Request Received — #' + leadId + ' | Construction Helps',
+                        _template: 'table',
+                        _captcha: 'false',
+                        _replyto: fromEmail,
+                        'Booking Reference': '#' + leadId,
+                        'Candidate Name': candidateName,
+                        'Service Requested': service,
+                        'Phone Number': leadData.phone,
+                        'Retake Protection': leadData.retake_package,
+                        'Preferred Venue / Date': leadData.preferred_location || 'Earliest available',
+                        'Important ID Requirement': 'You must bring an acceptable, original Primary ID (UK/Intl Passport, UK/EU Driving Licence, or verified eVisa) on test day.',
+                        'Next Steps': candidateNotes,
+                        'Support Helpline': '0800 002 5614 (' + fromEmail + ')',
+                        'Sender': fromName + ' <' + fromEmail + '>'
+                    };
+
+                    fetch('https://formsubmit.co/ajax/' + encodeURIComponent(leadData.email), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(candidatePayload)
+                    }).catch(function(){});
+                }
+            } catch(e) {
+                console.warn('Email dispatch notice:', e);
+            }
+
+            // 4. Background POST to controller/home-form.php (if on PHP server)
+            var formAction = form.getAttribute('action') || 'controller/home-form.php';
+            try {
                 fetch(formAction, {
                     method: 'POST',
                     body: formData,
