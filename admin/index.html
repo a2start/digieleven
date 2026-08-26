@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Construction Helps</title>
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="../images/construction/favicon.svg" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+        }
+        /* Login Screen */
+        #loginScreen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #104cba 0%, #0d3888 100%);
+            padding: 20px;
+        }
+        .login-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        .login-header {
+            background: #f8fafc;
+            padding: 30px 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .login-header h2 {
+            margin: 12px 0 4px;
+            color: #104cba;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .login-header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .login-body {
+            padding: 30px 25px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group i {
+            position: absolute;
+            left: 14px;
+            top: 13px;
+            color: #94a3b8;
+            font-size: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #104cba;
+            box-shadow: 0 0 0 3px rgba(16, 76, 186, 0.15);
+        }
+        .btn-submit {
+            width: 100%;
+            background: #104cba;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background: #0d3888;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Dashboard Screen */
+        #dashboardScreen {
+            display: none;
+        }
+        .navbar-admin {
+            background: #104cba;
+            color: #fff;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-nav {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .container-fluid {
+            padding: 25px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid #104cba;
+        }
+        .stat-card.new-leads { border-left-color: #f59e0b; }
+        .stat-card.citb-leads { border-left-color: #10b981; }
+        .stat-card.cscs-leads { border-left-color: #6366f1; }
+        .stat-val { font-size: 28px; font-weight: 700; color: #0f172a; margin: 4px 0 0; }
+        .stat-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-icon { font-size: 32px; opacity: 0.2; }
+        
+        .main-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 22px;
+        }
+        .card-header-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .search-box {
+            position: relative;
+            min-width: 280px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13.5px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 11px;
+            color: #94a3b8;
+        }
+        .table-responsive {
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+        .custom-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: left;
+        }
+        .custom-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .custom-table tr:hover td {
+            background: #f8fafc;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-new { background: #fef3c7; color: #b45309; }
+        .badge-contacted { background: #e0e7ff; color: #4338ca; }
+        .badge-booked { background: #dcfce7; color: #15803d; }
+        .badge-completed { background: #d1fae5; color: #047857; }
+        .badge-cancelled { background: #fee2e2; color: #b91c1c; }
+        
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 9px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .btn-action.delete:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .btn-export {
+            background: #059669;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-export:hover {
+            background: #047857;
+            color: #fff;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 10px;
+            padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; color: #104cba; margin: 0; }
+        .close-modal { background: none; border: none; font-size: 22px; cursor: pointer; color: #64748b; }
+        .detail-row { display: flex; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; }
+        .detail-label { width: 190px; font-weight: 600; color: #475569; }
+        .detail-value { flex: 1; color: #0f172a; word-break: break-word; }
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="../images/construction/construction_logo.svg" alt="Construction Helps" style="max-height: 48px;">
+            <h2>Admin Portal</h2>
+            <p>Sign in to view candidate bookings &amp; form submissions</p>
+        </div>
+
+        <div class="login-body">
+            <div class="alert-error" id="loginError">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="loginErrorMsg">Invalid credentials</span>
+            </div>
+
+            <form id="adminLoginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="adminUsername">Username</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="adminUsername" class="form-control" placeholder="admin" required value="admin" autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="admin123" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                </button>
+            </form>
+        </div>
+
+        <div style="background: #f8fafc; padding: 14px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
+            Default Credentials: <code>admin</code> / <code>admin123</code> &bull; <a href="../index.html" style="color: #104cba; text-decoration: none;">Return to Website</a>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Screen -->
+<div id="dashboardScreen">
+    <nav class="navbar-admin">
+        <a href="#" class="navbar-brand">
+            <i class="fa-solid fa-helmet-safety"></i> Construction Helps Admin Dashboard
+        </a>
+        <div class="navbar-nav">
+            <a href="../index.html" target="_blank" class="btn-nav"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Website</a>
+            <button onclick="exportToCSV()" class="btn-nav"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button onclick="handleLogout()" class="btn-nav" style="background: #dc2626;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Total Submissions</div>
+                    <div class="stat-val" id="statTotal">0</div>
+                </div>
+                <i class="fa-solid fa-users stat-icon"></i>
+            </div>
+            <div class="stat-card new-leads">
+                <div>
+                    <div class="stat-label">New / Pending Leads</div>
+                    <div class="stat-val" id="statNew">0</div>
+                </div>
+                <i class="fa-solid fa-clock stat-icon"></i>
+            </div>
+            <div class="stat-card citb-leads">
+                <div>
+                    <div class="stat-label">CITB Test Bookings</div>
+                    <div class="stat-val" id="statCitb">0</div>
+                </div>
+                <i class="fa-solid fa-file-signature stat-icon"></i>
+            </div>
+            <div class="stat-card cscs-leads">
+                <div>
+                    <div class="stat-label">CSCS Card Applications</div>
+                    <div class="stat-val" id="statCscs">0</div>
+                </div>
+                <i class="fa-solid fa-id-card stat-icon"></i>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <div class="card-header-flex">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 4px; color: #0f172a;">All Candidate Booking &amp; Form Submissions</h2>
+                    <p style="margin: 0; font-size: 13px; color: #64748b;">Submissions captured from your website forms in real-time.</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search name, phone, email, reference...">
+                    </div>
+                    <button onclick="exportToCSV()" class="btn-export">
+                        <i class="fa-solid fa-download"></i> Export All
+                    </button>
+                    <button onclick="seedDemoLead()" class="btn-nav" style="background: #475569; font-size: 12px;" title="Insert Test Lead">
+                        <i class="fa-solid fa-plus"></i> Add Test Lead
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="custom-table" id="submissionsTable">
+                    <thead>
+                        <tr>
+                            <th>Ref ID</th>
+                            <th>Date / Time</th>
+                            <th>Candidate Name</th>
+                            <th>Service Requested</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>City / Postcode</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal" id="detailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-id-card"></i> Candidate Submission Details</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modalBody"></div>
+        <div style="text-align: right; margin-top: 20px;">
+            <button type="button" class="btn-nav" style="background: #64748b; border: none;" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Authentication check
+function checkAuth() {
+    var isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
+    if (isAuth) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardScreen').style.display = 'block';
+        loadSubmissions();
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboardScreen').style.display = 'none';
+    }
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    var user = document.getElementById('adminUsername').value.trim();
+    var pass = document.getElementById('adminPassword').value.trim();
+
+    if (user === 'admin' && pass === 'admin123') {
+        sessionStorage.setItem('admin_authenticated', 'true');
+        document.getElementById('loginError').style.display = 'none';
+        checkAuth();
+    } else {
+        var err = document.getElementById('loginError');
+        err.style.display = 'flex';
+        document.getElementById('loginErrorMsg').innerText = 'Invalid username or password. (Default: admin / admin123)';
+    }
+}
+
+function handleLogout() {
+    sessionStorage.removeItem('admin_authenticated');
+    checkAuth();
+}
+
+// Data management
+function getSubmissions() {
+    try {
+        var raw = localStorage.getItem('digieleven_submissions');
+        return raw ? JSON.parse(raw) : [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function saveSubmissions(list) {
+    localStorage.setItem('digieleven_submissions', JSON.stringify(list));
+    renderTable();
+}
+
+function loadSubmissions() {
+    // Try fetching from submissions.json if present
+    fetch('../data/submissions.json')
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(serverData) {
+            if (Array.isArray(serverData) && serverData.length > 0) {
+                var local = getSubmissions();
+                var ids = new Set(local.map(function(item) { return item.id; }));
+                serverData.forEach(function(item) {
+                    if (!ids.has(item.id)) {
+                        local.push(item);
+                    }
+                });
+                localStorage.setItem('digieleven_submissions', JSON.stringify(local));
+            }
+            renderTable();
+        })
+        .catch(function() {
+            renderTable();
+        });
+}
+
+function renderTable() {
+    var submissions = getSubmissions();
+    var filter = (document.getElementById('searchInput').value || '').toLowerCase();
+    var tbody = document.getElementById('tableBody');
+
+    // Update stats
+    document.getElementById('statTotal').innerText = submissions.length;
+    document.getElementById('statNew').innerText = submissions.filter(function(s) { return (s.status || 'New') === 'New'; }).length;
+    document.getElementById('statCitb').innerText = submissions.filter(function(s) { return (s.subject || s.service_type || '').toLowerCase().includes('citb'); }).length;
+    document.getElementById('statCscs').innerText = submissions.filter(function(s) { return (s.subject || s.service_type || '').toLowerCase().includes('cscs') || (s.subject || s.service_type || '').toLowerCase().includes('card'); }).length;
+
+    var filtered = submissions.filter(function(row) {
+        var searchStr = [
+            row.id, row.candidate_name, row.first_name, row.last_name, row.email, row.phone, row.subject, row.city, row.postcode, row.status
+        ].join(' ').toLowerCase();
+        return searchStr.indexOf(filter) > -1;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 45px 20px; color: #64748b;">
+                    <i class="fa-solid fa-inbox" style="font-size: 36px; display: block; margin-bottom: 12px; opacity: 0.35;"></i>
+                    No submissions found. Fill out a form on the website to see it appear here in real-time.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    var html = '';
+    filtered.forEach(function(row, idx) {
+        var status = row.status || 'New';
+        var statusClass = 'badge-' + status.toLowerCase();
+        var candName = row.candidate_name || ((row.first_name || '') + ' ' + (row.last_name || '')).trim() || 'Candidate';
+        var service = row.subject || row.service_type || 'CITB Test Booking';
+        var hasRetake = (row.retake_package && row.retake_package.indexOf('Yes') > -1);
+
+        html += `
+            <tr class="submission-row">
+                <td><strong>#${row.id || (idx + 1)}</strong></td>
+                <td style="color: #64748b; font-size: 12.5px;">${row.created_at || 'Just now'}</td>
+                <td>
+                    <strong>${candName}</strong>
+                    ${row.dob ? `<div style="font-size: 11.5px; color: #64748b;">DOB: ${row.dob}</div>` : ''}
+                </td>
+                <td>
+                    <span style="font-weight: 600; color: #104cba;">${service}</span>
+                    ${hasRetake ? '<div style="font-size: 11px; color: #059669;"><i class="fa-solid fa-shield-halved"></i> Retake Protected</div>' : ''}
+                </td>
+                <td><a href="tel:${row.phone}" style="color: #0f172a; text-decoration: none; font-weight: 600;">${row.phone || 'N/A'}</a></td>
+                <td><a href="mailto:${row.email}" style="color: #64748b; text-decoration: none;">${row.email || 'N/A'}</a></td>
+                <td>${(row.city ? row.city + ', ' : '') + (row.postcode || 'N/A')}</td>
+                <td>
+                    <span class="badge-status ${statusClass}">${status}</span>
+                </td>
+                <td style="text-align: right; white-space: nowrap;">
+                    <button type="button" class="btn-action" title="View Details" onclick='viewDetails(${JSON.stringify(row)})'>
+                        <i class="fa-solid fa-eye" style="color: #104cba;"></i>
+                    </button>
+                    <select onchange="updateStatus('${row.id}', this.value)" style="padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer;">
+                        <option value="New" ${status === 'New' ? 'selected' : ''}>New</option>
+                        <option value="Contacted" ${status === 'Contacted' ? 'selected' : ''}>Contacted</option>
+                        <option value="Booked" ${status === 'Booked' ? 'selected' : ''}>Booked</option>
+                        <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                    <button type="button" class="btn-action delete" title="Delete" onclick="deleteSubmission('${row.id}')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function updateStatus(id, newStatus) {
+    var submissions = getSubmissions();
+    for (var i = 0; i < submissions.length; i++) {
+        if (submissions[i].id === id) {
+            submissions[i].status = newStatus;
+            break;
+        }
+    }
+    saveSubmissions(submissions);
+}
+
+function deleteSubmission(id) {
+    if (!confirm('Are you sure you want to delete this lead?')) return;
+    var submissions = getSubmissions();
+    var updated = submissions.filter(function(s) { return s.id !== id; });
+    saveSubmissions(updated);
+}
+
+function viewDetails(data) {
+    var html = `
+        <div class="detail-row"><div class="detail-label">Reference ID:</div><div class="detail-value"><strong>#${data.id || 'N/A'}</strong></div></div>
+        <div class="detail-row"><div class="detail-label">Submission Date:</div><div class="detail-value">${data.created_at || 'N/A'}</div></div>
+        <div class="detail-row"><div class="detail-label">Candidate Full Name:</div><div class="detail-value"><strong>${data.candidate_name || ((data.first_name || '') + ' ' + (data.last_name || ''))}</strong></div></div>
+        <div class="detail-row"><div class="detail-label">Date of Birth:</div><div class="detail-value">${data.dob || 'Not provided'}</div></div>
+        <div class="detail-row"><div class="detail-label">National Insurance:</div><div class="detail-value"><code>${data.ni_number || 'Not provided'}</code></div></div>
+        <div class="detail-row"><div class="detail-label">Residential Address:</div><div class="detail-value">${data.address_line1 || data.full_address || 'Not provided'}</div></div>
+        <div class="detail-row"><div class="detail-label">Town / City:</div><div class="detail-value">${data.city || 'Not provided'}</div></div>
+        <div class="detail-row"><div class="detail-label">Postcode:</div><div class="detail-value">${data.postcode || 'Not provided'}</div></div>
+        <div class="detail-row"><div class="detail-label">Phone Number:</div><div class="detail-value"><a href="tel:${data.phone}"><strong>${data.phone || 'N/A'}</strong></a></div></div>
+        <div class="detail-row"><div class="detail-label">Email Address:</div><div class="detail-value"><a href="mailto:${data.email}">${data.email || 'N/A'}</a></div></div>
+        <div class="detail-row"><div class="detail-label">Requested Service:</div><div class="detail-value"><strong style="color: #104cba;">${data.subject || data.service_type || 'CITB Test'}</strong></div></div>
+        <div class="detail-row"><div class="detail-label">Test Type / Level:</div><div class="detail-value">${data.test_type || 'Standard'}</div></div>
+        <div class="detail-row"><div class="detail-label">Retake Protection:</div><div class="detail-value">${data.retake_package || 'No'}</div></div>
+        <div class="detail-row"><div class="detail-label">Preferred Location:</div><div class="detail-value">${data.preferred_location || 'Earliest available'}</div></div>
+        <div class="detail-row"><div class="detail-label">Form Source:</div><div class="detail-value">${data.source_page || 'Website'}</div></div>
+        <div class="detail-row"><div class="detail-label">Status:</div><div class="detail-value"><span class="badge-status badge-${(data.status || 'new').toLowerCase()}">${data.status || 'New'}</span></div></div>
+    `;
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('detailsModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('detailsModal').classList.remove('active');
+}
+
+window.onclick = function(event) {
+    var modal = document.getElementById('detailsModal');
+    if (event.target == modal) closeModal();
+}
+
+function exportToCSV() {
+    var submissions = getSubmissions();
+    if (submissions.length === 0) {
+        alert('No submissions available to export.');
+        return;
+    }
+
+    var headers = ['Reference ID', 'Date', 'Candidate Name', 'DOB', 'NI Number', 'Address', 'City', 'Postcode', 'Phone', 'Email', 'Service', 'Retake Package', 'Status'];
+    var csvRows = [headers.join(',')];
+
+    submissions.forEach(function(row) {
+        var vals = [
+            `"${row.id || ''}"`,
+            `"${row.created_at || ''}"`,
+            `"${row.candidate_name || ''}"`,
+            `"${row.dob || ''}"`,
+            `"${row.ni_number || ''}"`,
+            `"${(row.address_line1 || '').replace(/"/g, '""')}"`,
+            `"${row.city || ''}"`,
+            `"${row.postcode || ''}"`,
+            `"${row.phone || ''}"`,
+            `"${row.email || ''}"`,
+            `"${row.subject || row.service_type || ''}"`,
+            `"${row.retake_package || ''}"`,
+            `"${row.status || 'New'}"`
+        ];
+        csvRows.push(vals.join(','));
+    });
+
+    var blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'digieleven_leads_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function seedDemoLead() {
+    var demo = {
+        id: 'CH-' + Math.floor(100000 + Math.random() * 900000),
+        created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        candidate_name: 'Abdul Ahad',
+        first_name: 'Abdul',
+        last_name: 'Ahad',
+        dob: '1995-04-12',
+        ni_number: 'QQ 12 34 56 A',
+        address_line1: '137-B, High Street',
+        city: 'London',
+        postcode: 'WC2H 9JQ',
+        phone: '0800 002 5614',
+        email: 'info@constructionhelps.com',
+        subject: 'CITB Test Booking (£45.00)',
+        test_type: 'CITB Operatives Test',
+        retake_package: 'Yes (+£20.00)',
+        preferred_location: 'Central London / Earliest available',
+        source_page: 'citb-test.html',
+        status: 'New'
+    };
+    var list = getSubmissions();
+    list.unshift(demo);
+    saveSubmissions(list);
+}
+
+// Run auth check on load
+document.addEventListener('DOMContentLoaded', checkAuth);
+</script>
+
+</body>
+</html>
