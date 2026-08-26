@@ -716,6 +716,10 @@
                             <i class="fa-solid fa-users-gear" style="color: #0284c7;"></i>
                             <span>Manage Team</span>
                         </button>
+                        <button class="dropdown-item" onclick="openEmailSettingsModal(); closeMenuDropdown();">
+                            <i class="fa-solid fa-envelope-circle-check" style="color: #ea580c;"></i>
+                            <span>Email Notifications</span>
+                        </button>
                         <button class="dropdown-item" onclick="openSettingsModal(); closeMenuDropdown();">
                             <i class="fa-solid fa-key" style="color: var(--primary);"></i>
                             <span>Admin Master Login</span>
@@ -1000,6 +1004,86 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn-menu-trigger" onclick="closeModal('addMemberModal')">Cancel</button>
                 <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 20px;">Save Team Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Email Notification Settings Modal -->
+<div class="modal" id="emailSettingsModal">
+    <div class="modal-content" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-envelope-circle-check" style="color: #ea580c;"></i> Email Notification Settings</h3>
+            <button class="close-modal" onclick="closeModal('emailSettingsModal')">&times;</button>
+        </div>
+        <form onsubmit="handleSaveEmailSettings(event)">
+            <div id="emailSettingsError" style="display: none; background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px;"></div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 700; color: var(--primary); font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-bell"></i> 1. Admin Lead Alerts
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="adminNotifyEmails">Send New Lead Alerts To (Email Addresses) *</label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-inbox left-icon"></i>
+                        <input type="text" id="adminNotifyEmails" class="form-input" placeholder="e.g. info@constructionhelps.com, alerts@digieleven.com" required>
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">Enter one or more email addresses separated by comma. Full candidate details will be emailed here instantly.</small>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 700; color: #059669; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-paper-plane"></i> 2. Candidate Acknowledgment Email
+                </div>
+
+                <div class="form-group">
+                    <label for="sendCandidateAck">Send Confirmation Email to Candidate?</label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-envelope-open-text left-icon"></i>
+                        <select id="sendCandidateAck" class="form-input" style="padding-left: 36px;">
+                            <option value="true">Yes — Automatically send professional receipt to candidate</option>
+                            <option value="false">No — Do not send automatic email to candidate</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row clearfix" style="display: flex; gap: 10px; margin: 0 -5px;">
+                    <div style="flex: 1; padding: 0 5px;">
+                        <div class="form-group">
+                            <label for="fromEmailAddress">Sender "From" Email Address *</label>
+                            <div class="input-wrap">
+                                <i class="fa-solid fa-at left-icon"></i>
+                                <input type="email" id="fromEmailAddress" class="form-input" placeholder="info@constructionhelps.com" required>
+                            </div>
+                            <small style="color: var(--text-muted); font-size: 11px;">The email candidate sees as sender.</small>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 0 5px;">
+                        <div class="form-group">
+                            <label for="fromDisplayName">Sender Display Name *</label>
+                            <div class="input-wrap">
+                                <i class="fa-solid fa-building left-icon"></i>
+                                <input type="text" id="fromDisplayName" class="form-input" placeholder="Construction Helps" required>
+                            </div>
+                            <small style="color: var(--text-muted); font-size: 11px;">e.g. Construction Helps Support</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="candidateEmailNotes">Custom Note / Advice in Candidate Email</label>
+                    <div class="input-wrap">
+                        <textarea id="candidateEmailNotes" class="form-input" rows="3" style="padding: 10px 14px; font-family: inherit; font-size: 13px; line-height: 1.5;" placeholder="An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-menu-trigger" onclick="closeModal('emailSettingsModal')">Cancel</button>
+                <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 22px;">Save Email Settings</button>
             </div>
         </form>
     </div>
@@ -1601,6 +1685,110 @@ function renderTeamList() {
     }
 
     listContainer.innerHTML = html;
+}
+
+// ==========================================
+// EMAIL NOTIFICATIONS SETTINGS & FIREBASE SYNC
+// ==========================================
+var cachedEmailConfig = null;
+
+function getEmailConfig() {
+    if (cachedEmailConfig) return cachedEmailConfig;
+    try {
+        var raw = localStorage.getItem('digieleven_email_config');
+        if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed) return parsed;
+        }
+    } catch(e) {}
+    return {
+        admin_notify_emails: 'info@constructionhelps.com, emailWazid@gmail.com',
+        from_email: 'info@constructionhelps.com',
+        from_name: 'Construction Helps',
+        send_candidate_ack: 'true',
+        candidate_email_notes: 'An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details.'
+    };
+}
+
+function saveEmailConfig(cfg) {
+    cachedEmailConfig = cfg;
+    localStorage.setItem('digieleven_email_config', JSON.stringify(cfg));
+}
+
+function fetchEmailConfig(callback) {
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('settings').doc('email_config').get()
+            .then(function(doc) {
+                if (doc.exists) {
+                    var data = doc.data();
+                    saveEmailConfig(data);
+                    if (callback) callback(data);
+                    return;
+                }
+                var def = getEmailConfig();
+                chFirestore.collection('settings').doc('email_config').set(def).catch(function(){});
+                if (callback) callback(def);
+            })
+            .catch(function() {
+                if (callback) callback(getEmailConfig());
+            });
+    } else {
+        if (callback) callback(getEmailConfig());
+    }
+}
+
+function openEmailSettingsModal() {
+    fetchEmailConfig(function(cfg) {
+        document.getElementById('adminNotifyEmails').value = cfg.admin_notify_emails || 'info@constructionhelps.com, emailWazid@gmail.com';
+        document.getElementById('fromEmailAddress').value = cfg.from_email || 'info@constructionhelps.com';
+        document.getElementById('fromDisplayName').value = cfg.from_name || 'Construction Helps';
+        document.getElementById('sendCandidateAck').value = (cfg.send_candidate_ack === false || cfg.send_candidate_ack === 'false') ? 'false' : 'true';
+        document.getElementById('candidateEmailNotes').value = cfg.candidate_email_notes || 'An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details.';
+        document.getElementById('emailSettingsError').style.display = 'none';
+        document.getElementById('emailSettingsModal').classList.add('active');
+    });
+}
+
+function handleSaveEmailSettings(e) {
+    e.preventDefault();
+    var adminEmails = document.getElementById('adminNotifyEmails').value.trim();
+    var fromEmail = document.getElementById('fromEmailAddress').value.trim();
+    var fromName = document.getElementById('fromDisplayName').value.trim();
+    var sendAck = document.getElementById('sendCandidateAck').value;
+    var notes = document.getElementById('candidateEmailNotes').value.trim();
+    var errBox = document.getElementById('emailSettingsError');
+
+    if (!adminEmails || !fromEmail || !fromName) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Please complete all required email settings.';
+        return;
+    }
+
+    var cfgObj = {
+        admin_notify_emails: adminEmails,
+        from_email: fromEmail,
+        from_name: fromName,
+        send_candidate_ack: sendAck,
+        candidate_email_notes: notes,
+        updated_at: new Date().toISOString()
+    };
+
+    saveEmailConfig(cfgObj);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('settings').doc('email_config').set(cfgObj)
+            .then(function() {
+                closeModal('emailSettingsModal');
+                showToast('Email settings updated worldwide in real-time!');
+            })
+            .catch(function(err) {
+                closeModal('emailSettingsModal');
+                showToast('Saved locally. (Cloud notice: ' + err.message + ')');
+            });
+    } else {
+        closeModal('emailSettingsModal');
+        showToast('Email settings saved successfully!');
+    }
 }
 
 // Data management & Real-time Live Firestore Sync

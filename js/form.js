@@ -234,9 +234,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.reset();
             }
 
-            // 3. Attempt async server post in background
+            // 3. Attempt async server post in background with dynamic email configurations
             var formAction = form.getAttribute('action') || 'controller/home-form.php';
             try {
+                var emailCfgRaw = localStorage.getItem('digieleven_email_config');
+                var emailCfg = emailCfgRaw ? JSON.parse(emailCfgRaw) : {};
+                if (emailCfg.admin_notify_emails) formData.append('admin_notify_emails', emailCfg.admin_notify_emails);
+                if (emailCfg.from_email) formData.append('from_email', emailCfg.from_email);
+                if (emailCfg.from_name) formData.append('from_name', emailCfg.from_name);
+                if (emailCfg.send_candidate_ack !== undefined) formData.append('send_candidate_ack', emailCfg.send_candidate_ack);
+                if (emailCfg.candidate_email_notes) formData.append('candidate_email_notes', emailCfg.candidate_email_notes);
+
                 fetch(formAction, {
                     method: 'POST',
                     body: formData,
