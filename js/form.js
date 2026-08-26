@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Received At': new Date().toLocaleString()
                 };
 
-                // Send to all configured admin recipients
+                // Send to all configured admin recipients via FormSubmit
                 adminEmailsStr.split(',').forEach(function(em) {
                     var cleanEm = em.trim();
                     if (cleanEm && cleanEm.indexOf('@') > -1) {
@@ -300,6 +300,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify(candidatePayload)
                     }).catch(function(){});
+                }
+
+                // Send via EmailJS (from info@constructionhelps.com) if template is configured
+                if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && emailjsConfig.templateId) {
+                    var emailjsParams = {
+                        candidate_name: candidateName,
+                        lead_id: '#' + leadId,
+                        phone: leadData.phone,
+                        email: leadData.email,
+                        service: service,
+                        dob: leadData.dob || 'Not provided',
+                        ni_number: leadData.ni_number || 'Not provided',
+                        address: [leadData.address_line1, leadData.city, leadData.postcode].filter(Boolean).join(', ') || 'Not provided',
+                        retake_package: leadData.retake_package,
+                        preferred_location: leadData.preferred_location || 'Earliest available',
+                        notes: candidateNotes,
+                        from_email: fromEmail,
+                        from_name: fromName,
+                        to_email: adminEmailsStr
+                    };
+                    emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, emailjsParams).catch(function(err){
+                        console.warn('EmailJS delivery notice:', err);
+                    });
                 }
             } catch(e) {
                 console.warn('Email dispatch notice:', e);

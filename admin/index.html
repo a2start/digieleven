@@ -1104,6 +1104,7 @@
 <!-- ================= 5. JAVASCRIPT LOGIC ================= -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="../js/firebase-init.js"></script>
 <script>
 var currentChipFilter = 'all';
@@ -1850,34 +1851,72 @@ function sendTestEmail(type) {
         'Timestamp': new Date().toLocaleString()
     };
 
-    fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = type === 'admin' 
-                ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
-                : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
-        }
-        showToast('Test email sent to: ' + targetEmail);
-        alert('Test email successfully dispatched to ' + targetEmail + '!\n\nNote: If this is the first time receiving an email from FormSubmit on this address, check your Inbox/Spam for a one-time "Activate FormSubmit" verification link.');
-    })
-    .catch(function(err) {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = type === 'admin' 
-                ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
-                : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
-        }
-        showToast('Test email triggered for: ' + targetEmail);
-    });
+    var sendViaFormSubmit = function() {
+        fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = type === 'admin' 
+                    ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
+                    : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+            }
+            showToast('Test email sent to: ' + targetEmail);
+            alert('Test email successfully dispatched to ' + targetEmail + '!');
+        })
+        .catch(function(err) {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = type === 'admin' 
+                    ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
+                    : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+            }
+            showToast('Test email triggered for: ' + targetEmail);
+        });
+    };
+
+    if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && emailjsConfig.templateId) {
+        var emailjsParams = {
+            candidate_name: 'John Doe',
+            lead_id: '#CH-TEST-9821',
+            phone: '07700 900123',
+            email: targetEmail,
+            service: 'CITB Operatives Test (£45.00)',
+            dob: '15/08/1990',
+            ni_number: 'QQ 12 34 56 A',
+            address: '10 Downing Street, London, SW1A 2AA',
+            retake_package: 'Yes (+£20.00)',
+            preferred_location: 'London Central (Earliest Available)',
+            notes: notes,
+            from_email: fromEmail,
+            from_name: fromName,
+            to_email: targetEmail
+        };
+        emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, emailjsParams)
+            .then(function() {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = type === 'admin' 
+                        ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
+                        : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+                }
+                showToast('EmailJS test sent directly from ' + fromEmail + ' to ' + targetEmail);
+                alert('Test email successfully sent via EmailJS (From: ' + fromEmail + ') to ' + targetEmail + '!');
+            })
+            .catch(function(err) {
+                console.warn('EmailJS error, trying fallback:', err);
+                sendViaFormSubmit();
+            });
+    } else {
+        sendViaFormSubmit();
+    }
 }
 
 // Data management & Real-time Live Firestore Sync

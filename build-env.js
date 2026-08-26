@@ -11,7 +11,12 @@ const appId = process.env.FIREBASE_APP_ID || '1:670060380676:web:03d984d8aa4b39e
 const measurementId = process.env.FIREBASE_MEASUREMENT_ID || 'G-1V3W2ENNGD';
 const apiKeyBase64 = Buffer.from(apiKey).toString('base64');
 
-const content = `// Auto-generated Firebase initialization from Environment Variables
+// EmailJS Environment Variables
+const emailjsServiceId = process.env.EMAILJS_SERVICE_ID || 'service_j6wp3lk';
+const emailjsTemplateId = process.env.EMAILJS_TEMPLATE_ID || '';
+const emailjsPublicKey = process.env.EMAILJS_PUBLIC_KEY || '';
+
+const content = `// Auto-generated Firebase & EmailJS initialization from Environment Variables
 var firebaseConfig = {
   apiKey: atob("${apiKeyBase64}"),
   authDomain: "${authDomain}",
@@ -20,6 +25,12 @@ var firebaseConfig = {
   messagingSenderId: "${messagingSenderId}",
   appId: "${appId}",
   measurementId: "${measurementId}"
+};
+
+var emailjsConfig = {
+  serviceId: "${emailjsServiceId}",
+  templateId: "${emailjsTemplateId}",
+  publicKey: "${emailjsPublicKey}"
 };
 
 var chFirebaseApp = null;
@@ -39,8 +50,17 @@ try {
 } catch(e) {
     console.warn('Firebase initialization notice:', e);
 }
+
+try {
+    if (typeof emailjs !== 'undefined' && emailjsConfig.publicKey) {
+        emailjs.init({ publicKey: emailjsConfig.publicKey });
+    }
+} catch(e) {
+    console.warn('EmailJS initialization notice:', e);
+}
 `;
 
 const targetPath = path.join(__dirname, 'js', 'firebase-init.js');
 fs.writeFileSync(targetPath, content, 'utf8');
 console.log('Successfully generated js/firebase-init.js from environment variables.');
+
