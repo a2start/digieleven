@@ -903,6 +903,9 @@
 </div>
 
 <!-- ================= 5. JAVASCRIPT LOGIC ================= -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-init.js"></script>
 <script>
 var currentChipFilter = 'all';
 
@@ -962,8 +965,13 @@ function togglePasswordVisibility(inputId, iconId) {
     }
 }
 
-// Credentials Management
+// Credentials Management & Firebase Cloud Sync
+var cachedCloudCreds = null;
+
 function getAdminCredentials() {
+    if (cachedCloudCreds && cachedCloudCreds.user && cachedCloudCreds.pass) {
+        return cachedCloudCreds;
+    }
     try {
         var raw = localStorage.getItem('digieleven_admin_creds');
         if (raw) {
@@ -975,8 +983,39 @@ function getAdminCredentials() {
 }
 
 function setAdminCredentials(user, pass) {
-    localStorage.setItem('digieleven_admin_creds', JSON.stringify({ user: user, pass: pass }));
+    cachedCloudCreds = { user: user, pass: pass };
+    localStorage.setItem('digieleven_admin_creds', JSON.stringify(cachedCloudCreds));
 }
+
+function fetchCloudCredentials(callback) {
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('settings').doc('auth').get()
+            .then(function(doc) {
+                if (doc.exists) {
+                    var data = doc.data();
+                    if (data && data.user && data.pass) {
+                        setAdminCredentials(data.user, data.pass);
+                        if (callback) callback(data);
+                        return;
+                    }
+                }
+                // Seed cloud document with default if missing
+                var defCreds = { user: 'ch-wazid-admin', pass: 'Ahad@8940' };
+                chFirestore.collection('settings').doc('auth').set(defCreds).catch(function(){});
+                setAdminCredentials(defCreds.user, defCreds.pass);
+                if (callback) callback(defCreds);
+            })
+            .catch(function(err) {
+                console.warn('Could not fetch cloud credentials:', err);
+                if (callback) callback(getAdminCredentials());
+            });
+    } else {
+        if (callback) callback(getAdminCredentials());
+    }
+}
+
+// Fetch latest cloud credentials on load
+fetchCloudCredentials();
 
 // Rate Limiting & Lockout
 var FAILED_ATTEMPTS_KEY = 'admin_failed_attempts';
@@ -1022,7 +1061,7 @@ function checkAuth() {
         sessionStorage.setItem('admin_login_time', String(now));
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('dashboardScreen').style.display = 'block';
-        loadSubmissions();
+        initRealtimeSubmissions();
     } else {
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboardScreen').style.display = 'none';
@@ -1034,32 +1073,44 @@ function handleLogin(e) {
     e.preventDefault();
     if (checkLockout()) return;
 
+    var btn = document.getElementById('btnSignIn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    }
+
     var user = document.getElementById('adminUsername').value.trim();
     var pass = document.getElementById('adminPassword').value.trim();
-    var currentCreds = getAdminCredentials();
 
-    if (user === currentCreds.user && pass === currentCreds.pass) {
-        sessionStorage.setItem('admin_authenticated', 'true');
-        sessionStorage.setItem('admin_login_time', String(Date.now()));
-        sessionStorage.removeItem(FAILED_ATTEMPTS_KEY);
-        sessionStorage.removeItem(LOCKOUT_UNTIL_KEY);
-        document.getElementById('loginError').style.display = 'none';
-        document.getElementById('adminPassword').value = '';
-        checkAuth();
-        showToast('Welcome back, Admin!');
-    } else {
-        var fails = parseInt(sessionStorage.getItem(FAILED_ATTEMPTS_KEY) || '0', 10) + 1;
-        sessionStorage.setItem(FAILED_ATTEMPTS_KEY, String(fails));
-
-        if (fails >= 5) {
-            sessionStorage.setItem(LOCKOUT_UNTIL_KEY, String(Date.now() + 60000));
-            checkLockout();
-        } else {
-            var err = document.getElementById('loginError');
-            err.style.display = 'flex';
-            document.getElementById('loginErrorMsg').innerText = 'Invalid credentials (' + (5 - fails) + ' attempts remaining)';
+    fetchCloudCredentials(function(currentCreds) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right"></i>';
         }
-    }
+
+        if (user === currentCreds.user && pass === currentCreds.pass) {
+            sessionStorage.setItem('admin_authenticated', 'true');
+            sessionStorage.setItem('admin_login_time', String(Date.now()));
+            sessionStorage.removeItem(FAILED_ATTEMPTS_KEY);
+            sessionStorage.removeItem(LOCKOUT_UNTIL_KEY);
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            checkAuth();
+            showToast('Welcome back, Admin!');
+        } else {
+            var fails = parseInt(sessionStorage.getItem(FAILED_ATTEMPTS_KEY) || '0', 10) + 1;
+            sessionStorage.setItem(FAILED_ATTEMPTS_KEY, String(fails));
+
+            if (fails >= 5) {
+                sessionStorage.setItem(LOCKOUT_UNTIL_KEY, String(Date.now() + 60000));
+                checkLockout();
+            } else {
+                var err = document.getElementById('loginError');
+                err.style.display = 'flex';
+                document.getElementById('loginErrorMsg').innerText = 'Invalid credentials (' + (5 - fails) + ' attempts remaining)';
+            }
+        }
+    });
 }
 
 function handleLogout() {
@@ -1101,11 +1152,28 @@ function handleSaveCredentials(e) {
     }
 
     setAdminCredentials(user, pass);
-    closeModal('settingsModal');
-    showToast('Admin login credentials updated successfully!');
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('settings').doc('auth').set({
+            user: user,
+            pass: pass,
+            updatedAt: new Date().toISOString()
+        }).then(function() {
+            closeModal('settingsModal');
+            showToast('Credentials updated worldwide in real-time!');
+        }).catch(function(err) {
+            closeModal('settingsModal');
+            showToast('Saved locally. (Cloud notice: ' + err.message + ')');
+        });
+    } else {
+        closeModal('settingsModal');
+        showToast('Admin login credentials updated successfully!');
+    }
 }
 
-// Data management
+// Data management & Real-time Live Firestore Sync
+var firestoreUnsubscribe = null;
+
 function getSubmissions() {
     try {
         var raw = localStorage.getItem('digieleven_submissions');
@@ -1118,6 +1186,45 @@ function getSubmissions() {
 function saveSubmissions(list) {
     localStorage.setItem('digieleven_submissions', JSON.stringify(list));
     renderData();
+}
+
+function initRealtimeSubmissions() {
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        if (firestoreUnsubscribe) {
+            try { firestoreUnsubscribe(); } catch(e){}
+        }
+
+        firestoreUnsubscribe = chFirestore.collection('submissions').onSnapshot(function(snapshot) {
+            var cloudList = [];
+            snapshot.forEach(function(doc) {
+                var data = doc.data();
+                data.id = doc.id || data.id;
+                cloudList.push(data);
+            });
+
+            // Merge with local storage if any
+            var local = getSubmissions();
+            var cloudIds = new Set(cloudList.map(function(item) { return item.id; }));
+            local.forEach(function(item) {
+                if (!cloudIds.has(item.id)) {
+                    cloudList.push(item);
+                    chFirestore.collection('submissions').doc(item.id).set(item).catch(function(){});
+                }
+            });
+
+            cloudList.sort(function(a, b) {
+                return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+            });
+
+            localStorage.setItem('digieleven_submissions', JSON.stringify(cloudList));
+            renderData();
+        }, function(err) {
+            console.warn('Firestore real-time error, falling back to local/file:', err);
+            loadSubmissions();
+        });
+    } else {
+        loadSubmissions();
+    }
 }
 
 function loadSubmissions() {
@@ -1317,6 +1424,11 @@ function updateStatus(id, newStatus) {
         }
     }
     saveSubmissions(submissions);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('submissions').doc(id).update({ status: newStatus }).catch(function(e){});
+    }
+
     showToast('Status updated to ' + newStatus);
 }
 
@@ -1325,6 +1437,11 @@ function deleteSubmission(id) {
     var submissions = getSubmissions();
     var updated = submissions.filter(function(s) { return s.id !== id; });
     saveSubmissions(updated);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('submissions').doc(id).delete().catch(function(e){});
+    }
+
     showToast('Lead deleted successfully.');
 }
 

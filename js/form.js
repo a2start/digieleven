@@ -191,8 +191,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 status: 'New'
             };
 
-            // 1. Immediately record in LocalStorage
+            // 1. Record in LocalStorage
             saveLeadToStorage(leadData);
+
+            // 2. Save to Firebase Firestore (Real-time Cloud Sync)
+            try {
+                if (typeof chFirestore !== 'undefined' && chFirestore) {
+                    chFirestore.collection('submissions').doc(leadId).set(leadData).catch(function(err) {
+                        console.warn('Firestore submission write error:', err);
+                    });
+                }
+            } catch(e) {
+                console.warn('Firestore not available:', e);
+            }
 
             // 2. Render Success UI in place
             var targetBox = document.getElementById('booking-form') || form.closest('.inner-column') || form.closest('.contact-form') || form.parentElement;
