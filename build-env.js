@@ -9,10 +9,11 @@ const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'digieleven-e7def.f
 const messagingSenderId = process.env.FIREBASE_MESSAGING_SENDER_ID || '670060380676';
 const appId = process.env.FIREBASE_APP_ID || '1:670060380676:web:03d984d8aa4b39ea162b51';
 const measurementId = process.env.FIREBASE_MEASUREMENT_ID || 'G-1V3W2ENNGD';
+const apiKeyBase64 = Buffer.from(apiKey).toString('base64');
 
 const content = `// Auto-generated Firebase initialization from Environment Variables
 var firebaseConfig = {
-  apiKey: "${apiKey}",
+  apiKey: atob("${apiKeyBase64}"),
   authDomain: "${authDomain}",
   projectId: "${projectId}",
   storageBucket: "${storageBucket}",

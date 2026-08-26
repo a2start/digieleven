@@ -1,4 +1,4 @@
-// Firebase Configuration & Initialization for Construction Helps
+// Auto-generated Firebase initialization from Environment Variables
 var firebaseConfig = {
   apiKey: atob("QUl6YVN5REYzWkxDRjdGWnFXRWJnMGJ6eENvODQ3UFFKczNYTHlN"),
   authDomain: "digieleven-e7def.firebaseapp.com",
@@ -9,7 +9,6 @@ var firebaseConfig = {
   measurementId: "G-1V3W2ENNGD"
 };
 
-// Initialize Firebase App & Firestore
 var chFirebaseApp = null;
 var chFirestore = null;
 
