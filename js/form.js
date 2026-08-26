@@ -27,6 +27,34 @@ function validationUsername() {
     }    
 }
 
+function validationDOB() {
+    let dobElem = document.getElementById('dob');
+    let dobError = document.getElementById('dob-error');
+    if (!dobElem || !dobElem.value) return true;
+
+    let selectedDate = new Date(dobElem.value);
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate > today) {
+        if (dobError) {
+            dobError.innerHTML = 'Date of birth cannot be in the future.';
+            dobError.style.display = 'block';
+        } else {
+            alert('Candidate Date of Birth cannot be in the future.');
+        }
+        dobElem.value = '';
+        dobElem.focus();
+        return false;
+    } else {
+        if (dobError) {
+            dobError.innerHTML = '';
+            dobError.style.display = 'none';
+        }
+        return true;
+    }
+}
+
 function validationEmail(){
     let emailElem = document.getElementById('email');
     let emailError = document.getElementById('email-error');
@@ -65,15 +93,16 @@ function validationPhone(){
 
 function validateForm(){
     let validName = validationUsername();
+    let validDOB = validationDOB();
     let validEmail = validationEmail();
     let validPhone = validationPhone();
     let submitError = document.getElementById('submit-error');
 
-    if(!validName || !validEmail || !validPhone){
+    if(!validName || !validDOB || !validEmail || !validPhone){
         if(submitError){
             submitError.style.display = 'block';
             submitError.style.color = 'red';
-            submitError.innerHTML = 'Please check and complete all required fields.';
+            submitError.innerHTML = 'Please check and complete all required fields correctly.';
             setTimeout(function(){ submitError.style.display = 'none'; }, 4000);
         }
         return false;
@@ -99,8 +128,21 @@ function saveLeadToStorage(lead) {
     }
 }
 
+// Restrict DOB picker max date to today on load
+function initDOBRestrictions() {
+    var todayStr = new Date().toISOString().split('T')[0];
+    var dobInputs = document.querySelectorAll('input[type="date"][name="dob"], input[type="date"]#dob, input[name="dob"]');
+    dobInputs.forEach(function(input) {
+        input.setAttribute('max', todayStr);
+        input.addEventListener('change', validationDOB);
+        input.addEventListener('input', validationDOB);
+    });
+}
+
 // Global Instant Form Submission Handler
 document.addEventListener('DOMContentLoaded', function() {
+    initDOBRestrictions();
+
     var forms = document.querySelectorAll('form[action*="controller/home-form.php"], form#citb-booking-form, form.form-register');
     
     forms.forEach(function(form) {
