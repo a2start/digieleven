@@ -4,44 +4,52 @@ error_reporting(0);
 $conn = mysqli_connect("localhost", "pohoopmy_constructionhelps", "]TpJx7^p3hHs", "pohoopmy_constructionhelps");
 if(empty($_SESSION['fullname'])){
     header("Location: info.php");
+    exit;
 }else{
     
     $firstname = $_SESSION['firstname'];
     $lastname = $_SESSION['lastname'];
     $phone = $_SESSION['phone'];
     $email = $_SESSION['email'];
+    $dob = $_SESSION['dob'];
+    $niNumber = $_SESSION['ni_number'];
+    $address = $_SESSION['address'];
     $qualify = $_SESSION['qualify'];
+    $serviceType = $_SESSION['service_type'];
     
     if($qualify){
-		    $to = "emailWazid@gmail.com";
-            $subject = "You have received an Enquiry from construction Lead ";
-            $message = "
-                Name : $firstname $lastname <br>
-                Email : $email  <br>
-                Phone: $phone <br>
-                Qualification: $qualify
-            ";
-            $headers  = "From: Construction Helps <constructionhelps@gmail.com>\n";
-            $headers .= 'X-Mailer: PHP/' . phpversion();
-            $headers .= "MIME-Version: 1.0\r\n";
-            $headers .= "Content-Type: text/html; charset=iso-8859-1\n";
-        
-            mail($to, $subject, $message, $headers);
+        $to = "emailWazid@gmail.com";
+        $subject = "Enquiry Received from digieleven.com - " . $serviceType;
+        $message = "
+            <strong>Service:</strong> $serviceType <br>
+            <strong>Name:</strong> $firstname $lastname <br>
+            <strong>Email:</strong> $email <br>
+            <strong>Phone:</strong> $phone <br>
+            <strong>DOB:</strong> $dob <br>
+            <strong>NI Number:</strong> $niNumber <br>
+            <strong>Address:</strong> $address <br>
+            <strong>Qualification Status:</strong> $qualify <br>
+        ";
+        $headers  = "From: Construction Helps <info@constructionhelps.com>\r\n";
+        $headers .= "MIME-Version: 1.0\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+    
+        @mail($to, $subject, $message, $headers);
     }
-if(isset($_POST['submit'])){
 
-    echo "<script LANGUAGE='JAVASCRIPT'>
-            window.alert('Your Call Back Is arranged!! Please Wait For Sometime!');
-            window.location.href='../index.html';
-            </script>";
-}
+    if(isset($_POST['submit'])){
+        echo "<script LANGUAGE='JAVASCRIPT'>
+                window.location.href='../index.html';
+                </script>";
+        exit;
+    }
 
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Construction Helps - Success</title>
+	<title>Construction Helps - Application Received</title>
 	<!-- Mobile Specific Metas -->
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<link rel="shortcut icon" href="../images/construction/favicon.svg" type="image/x-icon">
@@ -54,51 +62,55 @@ if(isset($_POST['submit'])){
     <link rel="stylesheet" href="css/style.css"/>
 	<style>
 		.actions ul li{
-      visibility: hidden;
-    }  
-	.right-button{
-		padding: 15px 24px;
-		color: #fff;
-		background: #104cba;
-		font-size: 16px;
-		font-weight: 500;
-		border-radius: 5px;
-		text-align: center;
-		cursor: pointer;
-	}
+			visibility: hidden;
+		}  
+		.right-button{
+			padding: 12px 28px;
+			color: #fff;
+			background: #104cba;
+			font-size: 16px;
+			font-weight: 600;
+			border-radius: 5px;
+			border: none;
+			text-align: center;
+			cursor: pointer;
+			margin-top: 15px;
+		}
+		.price-card-box {
+			background: rgba(255, 255, 255, 0.95);
+			color: #333;
+			padding: 30px 25px;
+			border-radius: 8px;
+			margin-bottom: 20px;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+			text-align: center;
+		}
 	</style>
 </head>
 <body>
-	<div class="page-content" style="background-image: url('../images/construction/london.webp');">
-		<div class="wizard-heading">Construction Helps</div>
-		<div class="wizard-v6-content">
-			<div class="wizard-form">
+	<div class="page-content" style="background-image: url('../images/construction/london.webp'); min-height: 100vh; padding: 40px 15px;">
+		<div class="wizard-heading" style="text-align: center; color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 20px;">Construction Helps</div>
+		<div class="wizard-v6-content" style="max-width: 700px; margin: 0 auto;">
+			<div class="wizard-form" style="background: rgba(16, 76, 186, 0.92); padding: 30px; border-radius: 10px;">
 		        <form class="form-register" id="form-register" method="post">
-		        	<div id="form-total">						
-		        		<!-- SECTION 1 -->
-			            <h2>
-			            	<p class="step-icon"><span>3</span></p>
-			            	<span class="step-text">Success</span>
-			            </h2>
-			            <section>							
-			                <div class="inner">
-			                	<div class="form-heading">
-			                		<h3>Thank You For Submitting Your Details. Please Contact <a href="tel:03333 03 1186" style="color: #fff">03333 03 1186</a></h3>
-			                		<span>3/3</span>
-			                	</div>
-																														
+		        	<div id="form-total">
+						<div class="price-card-box">
+							<div style="font-size: 48px; color: #28a745; margin-bottom: 15px;">&#10004;</div>
+							<h3 style="color: #104cba; font-weight: 700; margin-bottom: 12px; font-size: 22px;">Thank You, <?php echo htmlspecialchars($firstname); ?>!</h3>
+							<p style="font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px;">Your details have been securely received by our booking team. A representative will contact you shortly to confirm your booking and process your request.</p>
+							
+							<div style="background: #f0f7ff; border: 1px solid #cce5ff; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-size: 14px; color: #333;">
+								<strong>Need Immediate Assistance?</strong><br>
+								Call Customer Support: <a href="tel:0800 002 5614" style="color: #104cba; font-weight: 700;">0800 002 5614</a> or <a href="tel:0333 303 1186" style="color: #104cba; font-weight: 700;">0333 303 1186</a>
 							</div>
-			            </section>
-						<!-- SECTION 2 -->						
-			            
-						<button type="submit" name="submit" class="btn right-button">Back To Home</button>
-						<!-- <a href="#next" class="actions"></a> -->
+
+							<div>
+								<button type="submit" name="submit" class="right-button" style="width: 100%; max-width: 250px;">Return to Home</button>
+							</div>
+						</div>
 						
-						<div>
-						    <h4 style="color: #fff">Note : Test cost would be £43 including Admin Fee & VAT</h4>
-						    <h4 style="color: #fff">For Card cost £59 including Admin Fee & VAT</h4>
-						    <h4 style="color: #fff">For courses £150 including Admin Fee & VAT</h4>
-						    <h4 style="color: #fff">NVQ COURSES £999 + VAT</h4>
+						<div style="background: rgba(255,255,255,0.15); border-radius: 6px; padding: 15px; color: #fff; font-size: 13px; line-height: 1.6; text-align: center;">
+						    Construction Helps Ltd is an independent third-party service provider and is not affiliated with CITB or CSCS.
 						</div>
 		        	</div>
 		        </form>
@@ -111,4 +123,4 @@ if(isset($_POST['submit'])){
 	<script src="js/main.js"></script>
 </body>
 </html>
-<?php }?>
+<?php } ?>

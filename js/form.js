@@ -1,16 +1,14 @@
-let usernameError = document.getElementById('username-error');
-let emailError = document.getElementById('email-error');
-let phoneError = document.getElementById('phone-error');
-let submitError = document.getElementById('submit-error');
-
 function validationUsername() {
-    let username = document.getElementById('username').value;
+    let usernameElem = document.getElementById('username');
+    let usernameError = document.getElementById('username-error');
+    if(!usernameElem || !usernameError) return true;
+    let username = usernameElem.value.trim();
 
-    if(username.length == 0){
-        usernameError.innerHTML = 'Name is required!';
+    if(username.length === 0){
+        usernameError.innerHTML = 'Name is required';
         return false;
-    }else if(!username.match(/^[A-Za-z]*\s{1}[A-Za-z]*$/)){
-        usernameError.innerHTML = 'Please Fill Your Full Name';
+    }else if(username.length < 2){
+        usernameError.innerHTML = 'Please enter your full name';
         return false;
     }else{
         usernameError.innerHTML = '';
@@ -19,13 +17,16 @@ function validationUsername() {
 }
 
 function validationEmail(){
-    let email = document.getElementById('email').value;
+    let emailElem = document.getElementById('email');
+    let emailError = document.getElementById('email-error');
+    if(!emailElem || !emailError) return true;
+    let email = emailElem.value.trim();
 
-    if(email.length == 0){
-        emailError.innerHTML = 'Email is Required';
+    if(email.length === 0){
+        emailError.innerHTML = 'Email is required';
         return false;
-    }else if(!email.match(/^[A-Za-z\._\-[0-9]*[@][A-Za-z]*[\.][a-z]{2,4}$/)){
-        emailError.innerHTML = 'Email Invalid';
+    }else if(!email.match(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/)){
+        emailError.innerHTML = 'Please enter a valid email address';
         return false;
     }else{
         emailError.innerHTML = '';
@@ -34,17 +35,16 @@ function validationEmail(){
 }
 
 function validationPhone(){
+    let phoneElem = document.getElementById('phone');
+    let phoneError = document.getElementById('phone-error');
+    if(!phoneElem || !phoneError) return true;
+    let phone = phoneElem.value.trim().replace(/[\s\-()]/g, '');
 
-    let phone = document.getElementById('phone').value;
-
-    if(phone.length == 0){
-        phoneError.innerHTML = 'Phone Number Is Required';
+    if(phone.length === 0){
+        phoneError.innerHTML = 'Phone number is required';
         return false;
-    }else if(!phone.match(/^[0-9]{10}$/)){
-        phoneError.innerHTML = 'Phone Is Required!';
-        return false;
-    }else if(phone.length !== 10){
-        phoneError.innerHTML = 'Phone Number Should Be 10 Digits';
+    }else if(!phone.match(/^(\+44|0)[0-9]{9,11}$/)){
+        phoneError.innerHTML = 'Please enter a valid UK phone number (e.g. 07123456789)';
         return false;
     }else{
         phoneError.innerHTML = '';
@@ -53,31 +53,25 @@ function validationPhone(){
 }
 
 function validateForm(){
+    let validName = validationUsername();
+    let validEmail = validationEmail();
+    let validPhone = validationPhone();
+    let submitError = document.getElementById('submit-error');
 
-    if(!validationUsername() || !validationEmail() || !validationPhone()){
-        submitError.style.display = 'block';
-        submitError.style.color = 'red';
-        submitError.innerHTML = 'Please Fix Error To Submit';
-        setTimeout(function(){ submitError.style.display = 'none'; }, 3000)
+    if(!validName || !validEmail || !validPhone){
+        if(submitError){
+            submitError.style.display = 'block';
+            submitError.style.color = 'red';
+            submitError.innerHTML = 'Please check and fix the errors above before submitting.';
+            setTimeout(function(){ submitError.style.display = 'none'; }, 4000);
+        }
         return false;
     }else{
-
-        // let user_name = document.getElementById('username').value;
-        // let email_valid = document.getElementById('email').value;
-        // let phone_valid = document.getElementById('phone').value;
-        // let subject_valid = document.getElementById('subject').value;
-       
-        // const ajax = new XMLHttpRequest();
-        // ajax.open('POST', './../controller/home-form.php', true);
-        // ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        // ajax.onreadystatechange = function() {
-        //     if(ajax.readyState == 4 && ajax.status == 200){
-        //         submitError.innerHTML = ajax.responseText;
-        //     }
-        // }
-        // ajax.send("username="+user_name+"email="+email_valid+"phone="+phone_valid+"subject="+subject_valid);
-        submitError.innerHTML = 'Thank you For Submitting!!';
+        if(submitError){
+            submitError.style.display = 'block';
+            submitError.style.color = 'green';
+            submitError.innerHTML = 'Submitting your request...';
+        }
         return true;
     }
 }
-
