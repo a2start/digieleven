@@ -498,6 +498,53 @@
     <script src="js/wow.js"></script>
     <script src="js/appear.js"></script>
     <script src="js/script.js"></script>
-    <script src="js/form.js?v=2.2"></script>
+    <script src="js/form.js?v=2.3"></script>
+
+    <!-- Smooth Desktop Sticky Form Handler -->
+    <script>
+        (function() {
+            function updateStickyForm() {
+                if (window.innerWidth < 992) {
+                    var box = document.querySelector('.sticky-booking-box');
+                    if (box) box.style.transform = 'none';
+                    return;
+                }
+                var formCol = document.getElementById('booking-form');
+                var formBox = document.querySelector('.sticky-booking-box');
+                var leftCol = document.querySelector('.business-section .content-column.col-lg-7');
+                if (!formCol || !formBox || !leftCol) return;
+
+                var rowElem = formCol.parentElement;
+                if (!rowElem) return;
+
+                var rowRect = rowElem.getBoundingClientRect();
+                var formHeight = formBox.offsetHeight;
+                var leftHeight = leftCol.offsetHeight;
+                var maxTravel = leftHeight - formHeight;
+
+                if (maxTravel <= 0) {
+                    formBox.style.transform = 'none';
+                    return;
+                }
+
+                var topPadding = 25;
+                var scrollOffset = -rowRect.top + topPadding;
+
+                if (scrollOffset > 0 && scrollOffset <= maxTravel) {
+                    formBox.style.transform = 'translateY(' + scrollOffset + 'px)';
+                } else if (scrollOffset > maxTravel) {
+                    formBox.style.transform = 'translateY(' + maxTravel + 'px)';
+                } else {
+                    formBox.style.transform = 'translateY(0px)';
+                }
+            }
+
+            window.addEventListener('scroll', updateStickyForm, { passive: true });
+            window.addEventListener('resize', updateStickyForm, { passive: true });
+            document.addEventListener('DOMContentLoaded', updateStickyForm);
+            setTimeout(updateStickyForm, 300);
+            setTimeout(updateStickyForm, 1000);
+        })();
+    </script>
 </body>
 </html>
