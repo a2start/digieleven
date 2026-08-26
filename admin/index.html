@@ -41,7 +41,7 @@
             color: var(--text-main);
             font-size: 14px;
             line-height: 1.5;
-            padding-bottom: 70px; /* Space for mobile app bottom bar */
+            padding-bottom: 75px; /* Space for mobile app bottom bar */
         }
 
         @media (min-width: 992px) {
@@ -134,7 +134,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 12px 20px;
+            padding: 10px 16px;
         }
         .header-content {
             max-width: 1350px;
@@ -152,59 +152,112 @@
         .app-logo-badge {
             background: var(--primary);
             color: #fff;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
         }
-        .app-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.3px; }
-        .app-subtitle { font-size: 11.5px; color: var(--text-muted); margin: 0; }
-        .header-actions { display: flex; align-items: center; gap: 8px; }
-
-        .btn-header-action {
+        .app-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.3px; line-height: 1.2; }
+        .app-subtitle { font-size: 11px; color: var(--text-muted); margin: 0; }
+        
+        /* Dropdown Menu Container */
+        .menu-dropdown-wrap {
+            position: relative;
+        }
+        .btn-menu-trigger {
             background: #f1f5f9;
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 7px 12px;
-            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            border-radius: 20px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.2s;
-            text-decoration: none;
             font-family: inherit;
         }
-        .btn-header-action:hover { background: #e2e8f0; color: var(--primary); }
-        .btn-header-action.danger { color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
-        .btn-header-action.danger:hover { background: #fee2e2; }
+        .btn-menu-trigger:hover, .btn-menu-trigger.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .dropdown-menu-card {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 220px;
+            z-index: 500;
+            overflow: hidden;
+            animation: fadeIn 0.15s ease;
+        }
+        .dropdown-menu-card.show {
+            display: block;
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+        .dropdown-item:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+        .dropdown-item.danger {
+            color: var(--danger);
+            border-top: 1px solid #f1f5f9;
+        }
+        .dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+        .dropdown-item i {
+            width: 16px;
+            font-size: 14px;
+        }
 
         /* Dashboard Container */
         .app-container {
             max-width: 1350px;
-            margin: 20px auto;
-            padding: 0 16px;
+            margin: 16px auto;
+            padding: 0 14px;
         }
 
         /* Metric Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
         @media (min-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
         }
         .stat-card {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 14px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-sm);
             display: flex;
@@ -212,7 +265,10 @@
             justify-content: space-between;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s;
         }
+        .stat-card:active { transform: scale(0.98); }
         .stat-card::after {
             content: '';
             position: absolute;
@@ -225,18 +281,18 @@
         .stat-card.new-leads::after { background: var(--warning); }
         .stat-card.citb-leads::after { background: var(--success); }
         .stat-card.cscs-leads::after { background: var(--info); }
-        .stat-info .stat-num { font-size: 24px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.2; }
-        .stat-info .stat-text { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        .stat-info .stat-num { font-size: 22px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.2; }
+        .stat-info .stat-text { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
         .stat-icon-wrap {
-            width: 42px;
-            height: 42px;
+            width: 38px;
+            height: 38px;
             border-radius: var(--radius-md);
             background: #f1f5f9;
             color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         /* Filter Chips / Tabs */
@@ -244,14 +300,14 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
             box-shadow: var(--shadow-sm);
         }
         .filter-bar-flex {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         @media (min-width: 992px) {
             .filter-bar-flex {
@@ -384,16 +440,16 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 15px;
             box-shadow: var(--shadow-sm);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            transition: transform 0.15s ease;
         }
         .lead-app-card:active { transform: scale(0.99); }
         .lead-card-top {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .lead-avatar-wrap {
             display: flex;
@@ -401,8 +457,8 @@
             gap: 10px;
         }
         .avatar-circle {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #e2e8f0;
             color: var(--primary);
@@ -410,18 +466,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 14px;
         }
-        .lead-name { font-size: 15px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.2; }
+        .lead-name { font-size: 14.5px; font-weight: 800; color: var(--text-main); margin: 0; line-height: 1.2; }
         .lead-ref { font-size: 11px; color: var(--text-muted); font-weight: 600; }
         .lead-card-service {
             background: #f8fafc;
-            padding: 8px 12px;
+            padding: 8px 10px;
             border-radius: var(--radius-sm);
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--primary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -429,10 +485,10 @@
         .lead-meta-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
             font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .lead-meta-item { display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .lead-meta-item i { color: #94a3b8; width: 14px; }
@@ -441,13 +497,13 @@
             align-items: center;
             gap: 8px;
             border-top: 1px solid #f1f5f9;
-            padding-top: 12px;
+            padding-top: 10px;
         }
         .btn-card-action {
             flex: 1;
-            padding: 8px;
+            padding: 7px;
             border-radius: var(--radius-sm);
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             border: 1px solid var(--border);
             background: #fff;
@@ -455,7 +511,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-main);
             text-decoration: none;
             font-family: inherit;
@@ -508,7 +564,7 @@
             height: 100%;
             background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(3px);
-            align-items: flex-end; /* Mobile Bottom Sheet */
+            align-items: flex-end;
             justify-content: center;
         }
         @media (min-width: 768px) {
@@ -519,8 +575,8 @@
             background: #fff;
             width: 100%;
             max-width: 600px;
-            border-radius: 20px 20px 0 0; /* Bottom sheet on mobile */
-            padding: 24px;
+            border-radius: 20px 20px 0 0;
+            padding: 22px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
@@ -534,16 +590,16 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 14px;
-            margin-bottom: 16px;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
         }
-        .modal-title { font-size: 17px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px; }
-        .close-modal { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
-        .detail-row { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .modal-title { font-size: 16.5px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px; }
+        .close-modal { background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 15px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+        .detail-row { display: flex; flex-direction: column; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
         @media (min-width: 500px) {
             .detail-row { flex-direction: row; }
         }
-        .detail-label { width: 170px; font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; margin-bottom: 2px; }
+        .detail-label { width: 160px; font-weight: 700; color: var(--text-muted); font-size: 11.5px; text-transform: uppercase; margin-bottom: 2px; }
         .detail-value { flex: 1; color: var(--text-main); font-weight: 500; word-break: break-word; }
 
         /* Toast notification */
@@ -640,19 +696,33 @@
                 </div>
             </div>
 
-            <div class="header-actions">
-                <button onclick="exportToCSV()" class="btn-header-action" title="Export CSV">
-                    <i class="fa-solid fa-file-csv" style="color: #059669;"></i> <span class="d-none d-sm-inline">Export CSV</span>
+            <!-- Single Clean Options Dropdown Menu Button -->
+            <div class="menu-dropdown-wrap">
+                <button class="btn-menu-trigger" id="menuDropdownBtn" onclick="toggleMenuDropdown(event)">
+                    <i class="fa-solid fa-bars"></i>
+                    <span>Menu</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size: 11px;"></i>
                 </button>
-                <button onclick="openSettingsModal()" class="btn-header-action" title="Account Settings">
-                    <i class="fa-solid fa-key"></i> <span class="d-none d-sm-inline">Security</span>
-                </button>
-                <a href="../index.html" target="_blank" class="btn-header-action" title="Live Site">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> <span class="d-none d-md-inline">Live Site</span>
-                </a>
-                <button onclick="handleLogout()" class="btn-header-action danger" title="Sign Out">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
+
+                <!-- Dropdown Menu Card -->
+                <div class="dropdown-menu-card" id="headerDropdownMenu">
+                    <button class="dropdown-item" onclick="exportToCSV(); closeMenuDropdown();">
+                        <i class="fa-solid fa-file-csv" style="color: #059669;"></i>
+                        <span>Export All to CSV</span>
+                    </button>
+                    <button class="dropdown-item" onclick="openSettingsModal(); closeMenuDropdown();">
+                        <i class="fa-solid fa-key" style="color: var(--primary);"></i>
+                        <span>Change Login Info</span>
+                    </button>
+                    <a href="../index.html" target="_blank" class="dropdown-item" onclick="closeMenuDropdown();">
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="color: #6366f1;"></i>
+                        <span>Visit Live Website</span>
+                    </a>
+                    <button class="dropdown-item danger" onclick="handleLogout(); closeMenuDropdown();">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Sign Out (Logout)</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -784,8 +854,8 @@
             <button class="close-modal" onclick="closeModal('detailsModal')">&times;</button>
         </div>
         <div id="modalBody"></div>
-        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-            <button type="button" class="btn-header-action" onclick="closeModal('detailsModal')">Close</button>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px;">
+            <button type="button" class="btn-primary-app" style="width: auto; padding: 8px 18px; font-size: 13.5px;" onclick="closeModal('detailsModal')">Close</button>
         </div>
     </div>
 </div>
@@ -825,7 +895,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button type="button" class="btn-header-action" onclick="closeModal('settingsModal')">Cancel</button>
+                <button type="button" class="btn-menu-trigger" onclick="closeModal('settingsModal')">Cancel</button>
                 <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 20px;">Save Credentials</button>
             </div>
         </form>
@@ -835,6 +905,36 @@
 <!-- ================= 5. JAVASCRIPT LOGIC ================= -->
 <script>
 var currentChipFilter = 'all';
+
+// Dropdown Menu Handlers
+function toggleMenuDropdown(e) {
+    e.stopPropagation();
+    var menu = document.getElementById('headerDropdownMenu');
+    var btn = document.getElementById('menuDropdownBtn');
+    if (!menu) return;
+    var isOpen = menu.classList.contains('show');
+    if (isOpen) {
+        menu.classList.remove('show');
+        if (btn) btn.classList.remove('active');
+    } else {
+        menu.classList.add('show');
+        if (btn) btn.classList.add('active');
+    }
+}
+
+function closeMenuDropdown() {
+    var menu = document.getElementById('headerDropdownMenu');
+    var btn = document.getElementById('menuDropdownBtn');
+    if (menu) menu.classList.remove('show');
+    if (btn) btn.classList.remove('active');
+}
+
+document.addEventListener('click', function(e) {
+    var dropdownWrap = document.querySelector('.menu-dropdown-wrap');
+    if (dropdownWrap && !dropdownWrap.contains(e.target)) {
+        closeMenuDropdown();
+    }
+});
 
 // Toast Notification Helper
 function showToast(msg) {
@@ -913,7 +1013,6 @@ function checkAuth() {
     var loginTime = parseInt(sessionStorage.getItem('admin_login_time') || '0', 10);
     var now = Date.now();
 
-    // 30 minute session expiry
     if (isAuth && (now - loginTime > 30 * 60 * 1000)) {
         handleLogout();
         return;
@@ -1074,14 +1173,12 @@ function renderData() {
         var status = (row.status || 'New').toLowerCase();
         var subj = (row.subject || row.service_type || '').toLowerCase();
 
-        // Chip Filter
         if (currentChipFilter === 'new' && status !== 'new') return false;
         if (currentChipFilter === 'contacted' && status !== 'contacted') return false;
         if (currentChipFilter === 'booked' && status !== 'booked') return false;
         if (currentChipFilter === 'citb' && !subj.includes('citb')) return false;
         if (currentChipFilter === 'cscs' && (!subj.includes('cscs') && !subj.includes('card'))) return false;
 
-        // Search Filter
         if (search) {
             var haystack = [
                 row.id, row.candidate_name, row.first_name, row.last_name, row.phone, row.email, row.city, row.postcode, row.subject
@@ -1137,7 +1234,7 @@ function renderData() {
                 <td>${(row.city ? row.city + ', ' : '') + (row.postcode || 'N/A')}</td>
                 <td><span class="badge-pill ${statusClass}">${status}</span></td>
                 <td style="text-align: right; white-space: nowrap;">
-                    <button type="button" class="btn-header-action" style="padding: 5px 8px;" title="View Details" onclick='viewDetails(${JSON.stringify(row)})'>
+                    <button type="button" class="btn-menu-trigger" style="padding: 5px 8px;" title="View Details" onclick='viewDetails(${JSON.stringify(row)})'>
                         <i class="fa-solid fa-eye" style="color: var(--primary);"></i>
                     </button>
                     <select onchange="updateStatus('${row.id}', this.value)" style="padding: 4px 6px; font-size: 12px; border-radius: 4px; border: 1px solid var(--border); font-family: inherit;">
@@ -1147,7 +1244,7 @@ function renderData() {
                         <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
                         <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
-                    <button type="button" class="btn-header-action danger" style="padding: 5px 8px;" title="Delete" onclick="deleteSubmission('${row.id}')">
+                    <button type="button" class="btn-menu-trigger" style="padding: 5px 8px; color: var(--danger);" title="Delete" onclick="deleteSubmission('${row.id}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>

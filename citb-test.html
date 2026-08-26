@@ -29,12 +29,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
     <style>
+        .page-wrapper {
+            overflow: visible !important;
+        }
         @media (min-width: 992px) {
+            #booking-form {
+                align-self: flex-start;
+            }
             .sticky-booking-box {
-                position: -webkit-sticky;
-                position: sticky;
-                top: 95px;
-                z-index: 50;
+                position: -webkit-sticky !important;
+                position: sticky !important;
+                top: 25px !important;
+                z-index: 50 !important;
             }
         }
     </style>
