@@ -302,8 +302,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }).catch(function(){});
                 }
 
-                // Send via EmailJS (from info@constructionhelps.com) if template is configured
-                if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && emailjsConfig.templateId) {
+                // Send via EmailJS (from info@constructionhelps.com)
+                if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId) {
+                    var adminTpl = emailjsConfig.adminTemplateId || emailjsConfig.templateId;
+                    var candidateTpl = emailjsConfig.candidateTemplateId;
+
                     var emailjsParams = {
                         candidate_name: candidateName,
                         lead_id: '#' + leadId,
@@ -320,9 +323,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         from_name: fromName,
                         to_email: adminEmailsStr
                     };
-                    emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, emailjsParams).catch(function(err){
-                        console.warn('EmailJS delivery notice:', err);
-                    });
+
+                    // 1. Send Admin Alert
+                    if (adminTpl) {
+                        emailjs.send(emailjsConfig.serviceId, adminTpl, emailjsParams).catch(function(err){
+                            console.warn('EmailJS Admin alert notice:', err);
+                        });
+                    }
+
+                    // 2. Send Candidate Confirmation Auto-Reply
+                    if (sendCandidateAck && candidateTpl && leadData.email) {
+                        var candParams = Object.assign({}, emailjsParams, { to_email: leadData.email });
+                        emailjs.send(emailjsConfig.serviceId, candidateTpl, candParams).catch(function(err){
+                            console.warn('EmailJS Candidate auto-reply notice:', err);
+                        });
+                    }
                 }
             } catch(e) {
                 console.warn('Email dispatch notice:', e);

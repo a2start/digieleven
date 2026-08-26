@@ -1882,7 +1882,11 @@ function sendTestEmail(type) {
         });
     };
 
-    if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && emailjsConfig.templateId) {
+    var activeTpl = type === 'admin' 
+        ? (emailjsConfig.adminTemplateId || emailjsConfig.templateId) 
+        : (emailjsConfig.candidateTemplateId || emailjsConfig.templateId);
+
+    if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && activeTpl) {
         var emailjsParams = {
             candidate_name: 'John Doe',
             lead_id: '#CH-TEST-9821',
@@ -1899,7 +1903,7 @@ function sendTestEmail(type) {
             from_name: fromName,
             to_email: targetEmail
         };
-        emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, emailjsParams)
+        emailjs.send(emailjsConfig.serviceId, activeTpl, emailjsParams)
             .then(function() {
                 if (btn) {
                     btn.disabled = false;

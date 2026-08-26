@@ -13,7 +13,8 @@ const apiKeyBase64 = Buffer.from(apiKey).toString('base64');
 
 // EmailJS Environment Variables
 const emailjsServiceId = process.env.EMAILJS_SERVICE_ID || 'service_j6wp3lk';
-const emailjsTemplateId = process.env.EMAILJS_TEMPLATE_ID || '';
+const emailjsAdminTemplateId = process.env.EMAILJS_ADMIN_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID || 'template_pltenq8';
+const emailjsCandidateTemplateId = process.env.EMAILJS_CANDIDATE_TEMPLATE_ID || 'template_b1g2j7r';
 const emailjsPublicKey = process.env.EMAILJS_PUBLIC_KEY || '';
 
 const content = `// Auto-generated Firebase & EmailJS initialization from Environment Variables
@@ -29,7 +30,9 @@ var firebaseConfig = {
 
 var emailjsConfig = {
   serviceId: "${emailjsServiceId}",
-  templateId: "${emailjsTemplateId}",
+  templateId: "${emailjsAdminTemplateId}",
+  adminTemplateId: "${emailjsAdminTemplateId}",
+  candidateTemplateId: "${emailjsCandidateTemplateId}",
   publicKey: "${emailjsPublicKey}"
 };
 
