@@ -81,15 +81,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($input['submit']) || !empty($
     array_unshift($submissions, $newSubmission);
     file_put_contents($dataFile, json_encode($submissions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
 
-    // 2. Save to MySQL database if available
-    $conn = @mysqli_connect("localhost", "pohoopmy_constructionhelps", "]TpJx7^p3hHs", "pohoopmy_constructionhelps");
-    if ($conn) {
-        $safeName = mysqli_real_escape_string($conn, $candidateName);
-        $safeEmail = mysqli_real_escape_string($conn, $email);
-        $safePhone = mysqli_real_escape_string($conn, $phone);
-        $safeSubject = mysqli_real_escape_string($conn, $subject);
-        @mysqli_query($conn, "INSERT INTO homeform(username, email, phone, subject) VALUES('$safeName','$safeEmail','$safePhone','$safeSubject')");
-        @mysqli_close($conn);
+    // 2. Save to MySQL database if configured in environment
+    $dbHost = getenv('DB_HOST') ?: 'localhost';
+    $dbUser = getenv('DB_USER') ?: 'pohoopmy_constructionhelps';
+    $dbPass = getenv('DB_PASS') ?: '';
+    $dbName = getenv('DB_NAME') ?: 'pohoopmy_constructionhelps';
+    if (!empty($dbPass)) {
+        $conn = @mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+        if ($conn) {
+            $safeName = mysqli_real_escape_string($conn, $candidateName);
+            $safeEmail = mysqli_real_escape_string($conn, $email);
+            $safePhone = mysqli_real_escape_string($conn, $phone);
+            $safeSubject = mysqli_real_escape_string($conn, $subject);
+            @mysqli_query($conn, "INSERT INTO homeform(username, email, phone, subject) VALUES('$safeName','$safeEmail','$safePhone','$safeSubject')");
+            @mysqli_close($conn);
+        }
     }
 
     // 3. Email Configurations (Dynamic from Dashboard or defaults)

@@ -2,9 +2,9 @@
 // Construction Helps Admin Configuration
 session_start();
 
-// Admin credentials (can be updated by the site administrator)
-define('ADMIN_USER', 'ch-wazid-admin');
-define('ADMIN_PASS', 'Ahad@8940');
+// Admin credentials (can be updated by the site administrator or via environment)
+define('ADMIN_USER', getenv('ADMIN_USER') ?: 'ch-wazid-admin');
+define('ADMIN_PASS', getenv('ADMIN_PASS') ?: 'Ahad@8940');
 
 // Data file path
 define('DATA_FILE', dirname(__DIR__) . '/data/submissions.json');

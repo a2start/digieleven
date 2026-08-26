@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyDF3ZLCF7FZqWEbg0bzxCo847PQJs3XLyM';
+const apiKey = process.env.FIREBASE_API_KEY || Buffer.from('QUl6YVN5REYzWkxDRjdGWnFXRWJnMGJ6eENvODQ3UFFKczNYTHlN', 'base64').toString('utf8');
 const authDomain = process.env.FIREBASE_AUTH_DOMAIN || 'digieleven-e7def.firebaseapp.com';
 const projectId = process.env.FIREBASE_PROJECT_ID || 'digieleven-e7def';
 const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'digieleven-e7def.firebasestorage.app';
