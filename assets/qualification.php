@@ -9,12 +9,28 @@ if(empty($_SESSION['fullname'])){
 }else{
 
 if(isset($_POST['submit'])){
-	$qualify = mysqli_real_escape_string($conn, $_POST['qualify']);	
+	$qualify = trim(strip_tags($_POST['qualify']));	
     
 	if($conn){
-		$sql = @mysqli_query($conn, "UPDATE card_detail SET qualify='$qualify' WHERE qualify=''");
+		$safeQualify = mysqli_real_escape_string($conn, $qualify);
+		$sql = @mysqli_query($conn, "UPDATE card_detail SET qualify='$safeQualify' WHERE qualify=''");
 	}
 	$_SESSION['qualify'] = $qualify;
+
+	// Update qualification in submissions.json
+	$dataFile = dirname(__DIR__) . '/data/submissions.json';
+	if (file_exists($dataFile)) {
+		$fileContent = file_get_contents($dataFile);
+		if (!empty($fileContent)) {
+			$submissions = json_decode($fileContent, true) ?: [];
+			if (!empty($submissions)) {
+				$submissions[0]['test_type'] = $qualify;
+				$submissions[0]['status'] = 'Completed Form';
+				file_put_contents($dataFile, json_encode($submissions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
+			}
+		}
+	}
+
 	echo "<script LANGUAGE='JAVASCRIPT'>
 		window.location.href='success.php';
 		</script>";

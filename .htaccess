@@ -1,14 +1,19 @@
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
+
+# Allow direct access to existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Rewrite clean URLs to .html if the .html file exists
+RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^([^\.]+)$ $1.html [NC,L]
 
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $2php [NC,L]
+# Rewrite clean URLs to .php if the .php file exists
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
 
-# php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php74” package as the default “PHP” programming language.
+# Enable PHP handler if using cPanel/LiteSpeed
 <IfModule mime_module>
   AddHandler application/x-httpd-ea-php74___lsphp .php .php7 .phtml
 </IfModule>
-# php -- END cPanel-generated handler, do not edit

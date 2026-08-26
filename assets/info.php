@@ -4,16 +4,16 @@ session_start();
 $conn = mysqli_connect("localhost", "pohoopmy_constructionhelps", "]TpJx7^p3hHs", "pohoopmy_constructionhelps");
 
 if(isset($_POST['submit'])){
-	$firstName = mysqli_real_escape_string($conn, $_POST['first_name']);
-	$lastName = mysqli_real_escape_string($conn, $_POST['last_name']);
-	$dob = mysqli_real_escape_string($conn, $_POST['dob']);
-	$niNumber = mysqli_real_escape_string($conn, $_POST['ni_number']);
-	$addressLine1 = mysqli_real_escape_string($conn, $_POST['address_line1']);
-	$city = mysqli_real_escape_string($conn, $_POST['city']);
-	$postcode = mysqli_real_escape_string($conn, $_POST['postcode']);
-	$phone = mysqli_real_escape_string($conn, $_POST['phone']);
-	$email = mysqli_real_escape_string($conn, $_POST['email']);
-	$serviceType = mysqli_real_escape_string($conn, $_POST['service_type']);
+	$firstName = trim(strip_tags($_POST['first_name']));
+	$lastName = trim(strip_tags($_POST['last_name']));
+	$dob = trim(strip_tags($_POST['dob']));
+	$niNumber = trim(strip_tags($_POST['ni_number']));
+	$addressLine1 = trim(strip_tags($_POST['address_line1']));
+	$city = trim(strip_tags($_POST['city']));
+	$postcode = trim(strip_tags($_POST['postcode']));
+	$phone = trim(strip_tags($_POST['phone']));
+	$email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+	$serviceType = trim(strip_tags($_POST['service_type']));
 
 	$_SESSION['fullname'] = $firstName . ' ' . $lastName;
 	$_SESSION['firstname'] = $firstName;
@@ -25,9 +25,50 @@ if(isset($_POST['submit'])){
 	$_SESSION['email'] = $email;
 	$_SESSION['service_type'] = $serviceType;
 
-	// Insert into database if connected
+	$leadId = 'CH-' . date('ymd') . '-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 4));
+	$timestamp = date('Y-m-d H:i:s');
+
+	$newSubmission = [
+		'id' => $leadId,
+		'created_at' => $timestamp,
+		'candidate_name' => trim($firstName . ' ' . $lastName),
+		'first_name' => $firstName,
+		'last_name' => $lastName,
+		'dob' => $dob,
+		'ni_number' => $niNumber,
+		'address_line1' => $addressLine1,
+		'city' => $city,
+		'postcode' => $postcode,
+		'full_address' => trim($addressLine1 . ', ' . $city . ' ' . $postcode, ', '),
+		'phone' => $phone,
+		'email' => $email,
+		'subject' => $serviceType,
+		'test_type' => $serviceType,
+		'retake_package' => 'Pending Step 3',
+		'preferred_location' => '',
+		'source_page' => 'Wizard (assets/info.php)',
+		'status' => 'In Progress'
+	];
+
+	// Save to JSON storage
+	$dataFile = dirname(__DIR__) . '/data/submissions.json';
+	$submissions = [];
+	if (file_exists($dataFile)) {
+		$fileContent = file_get_contents($dataFile);
+		if (!empty($fileContent)) {
+			$submissions = json_decode($fileContent, true) ?: [];
+		}
+	}
+	array_unshift($submissions, $newSubmission);
+	file_put_contents($dataFile, json_encode($submissions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
+
+	// Insert into MySQL database if connected
 	if($conn){
-		@mysqli_query($conn, "INSERT INTO card_detail(first_name, last_name, phone, email) VALUES('$firstName', '$lastName','$phone','$email')");
+		$safeFirst = mysqli_real_escape_string($conn, $firstName);
+		$safeLast = mysqli_real_escape_string($conn, $lastName);
+		$safePhone = mysqli_real_escape_string($conn, $phone);
+		$safeEmail = mysqli_real_escape_string($conn, $email);
+		@mysqli_query($conn, "INSERT INTO card_detail(first_name, last_name, phone, email) VALUES('$safeFirst', '$safeLast','$safePhone','$safeEmail')");
 	}
 
 	echo "<script LANGUAGE='JAVASCRIPT'>
