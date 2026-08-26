@@ -279,9 +279,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // (Admin alerts are handled via FormSubmit and EmailJS)
 
                 // Send via EmailJS (from info@constructionhelps.com)
-                if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId) {
-                    var adminTpl = emailjsConfig.adminTemplateId || emailjsConfig.templateId;
-                    var candidateTpl = emailjsConfig.candidateTemplateId;
+                var pubKey = emailCfg.emailjs_public_key || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.publicKey : '');
+                var srvId = emailCfg.emailjs_service_id || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.serviceId : 'service_j6wp3lk');
+                var adminTpl = emailCfg.emailjs_admin_template_id || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.adminTemplateId : 'template_pltenq8');
+                var candidateTpl = emailCfg.emailjs_candidate_template_id || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.candidateTemplateId : 'template_b1g2j7r');
+
+                if (typeof emailjs !== 'undefined' && srvId && pubKey) {
+                    try {
+                        emailjs.init({ publicKey: pubKey });
+                    } catch(e){}
 
                     var emailjsParams = {
                         candidate_name: candidateName,
@@ -302,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // 1. Send Admin Alert
                     if (adminTpl) {
-                        emailjs.send(emailjsConfig.serviceId, adminTpl, emailjsParams).catch(function(err){
+                        emailjs.send(srvId, adminTpl, emailjsParams, pubKey).catch(function(err){
                             console.warn('EmailJS Admin alert notice:', err);
                         });
                     }
@@ -310,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 2. Send Candidate Confirmation Auto-Reply
                     if (sendCandidateAck && candidateTpl && leadData.email) {
                         var candParams = Object.assign({}, emailjsParams, { to_email: leadData.email });
-                        emailjs.send(emailjsConfig.serviceId, candidateTpl, candParams).catch(function(err){
+                        emailjs.send(srvId, candidateTpl, candParams, pubKey).catch(function(err){
                             console.warn('EmailJS Candidate auto-reply notice:', err);
                         });
                     }

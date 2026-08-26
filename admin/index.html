@@ -1093,6 +1093,43 @@
                 </div>
             </div>
 
+            <!-- EmailJS Cloud API Credentials -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-weight: 700; color: #6366f1; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-key"></i> 3. EmailJS API Credentials
+                </div>
+
+                <div class="form-group">
+                    <label for="emailjsPublicKey">EmailJS Account Public Key *</label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-unlock-keyhole left-icon"></i>
+                        <input type="text" id="emailjsPublicKey" class="form-input" placeholder="e.g. your_public_key (from dashboard.emailjs.com/admin/account)" required spellcheck="false">
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 11px;">Found at: <a href="https://dashboard.emailjs.com/admin/account" target="_blank" style="color: var(--primary);">dashboard.emailjs.com/admin/account</a> &rarr; General / API Keys.</small>
+                </div>
+
+                <div class="row clearfix" style="display: flex; gap: 10px; margin: 0 -5px;">
+                    <div style="flex: 1; padding: 0 5px;">
+                        <div class="form-group">
+                            <label for="emailjsServiceId">EmailJS Service ID</label>
+                            <div class="input-wrap">
+                                <i class="fa-solid fa-server left-icon"></i>
+                                <input type="text" id="emailjsServiceId" class="form-input" placeholder="service_j6wp3lk" value="service_j6wp3lk" spellcheck="false">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 0 5px;">
+                        <div class="form-group">
+                            <label for="emailjsCandidateTemplateId">Candidate Auto-Reply Template ID</label>
+                            <div class="input-wrap">
+                                <i class="fa-solid fa-file-code left-icon"></i>
+                                <input type="text" id="emailjsCandidateTemplateId" class="form-input" placeholder="template_b1g2j7r" value="template_b1g2j7r" spellcheck="false">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn-menu-trigger" onclick="closeModal('emailSettingsModal')">Cancel</button>
                 <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 22px;">Save Email Settings</button>
@@ -1757,6 +1794,15 @@ function openEmailSettingsModal() {
         document.getElementById('fromDisplayName').value = cfg.from_name || 'Construction Helps';
         document.getElementById('sendCandidateAck').value = (cfg.send_candidate_ack === false || cfg.send_candidate_ack === 'false') ? 'false' : 'true';
         document.getElementById('candidateEmailNotes').value = cfg.candidate_email_notes || 'An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details.';
+        
+        var pubKey = cfg.emailjs_public_key || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.publicKey : '');
+        var srvId = cfg.emailjs_service_id || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.serviceId : 'service_j6wp3lk');
+        var candTpl = cfg.emailjs_candidate_template_id || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.candidateTemplateId : 'template_b1g2j7r');
+        
+        document.getElementById('emailjsPublicKey').value = pubKey;
+        document.getElementById('emailjsServiceId').value = srvId || 'service_j6wp3lk';
+        document.getElementById('emailjsCandidateTemplateId').value = candTpl || 'template_b1g2j7r';
+        
         document.getElementById('emailSettingsError').style.display = 'none';
         document.getElementById('emailSettingsModal').classList.add('active');
     });
@@ -1769,6 +1815,9 @@ function handleSaveEmailSettings(e) {
     var fromName = document.getElementById('fromDisplayName').value.trim();
     var sendAck = document.getElementById('sendCandidateAck').value;
     var notes = document.getElementById('candidateEmailNotes').value.trim();
+    var pubKey = document.getElementById('emailjsPublicKey').value.trim();
+    var srvId = document.getElementById('emailjsServiceId').value.trim() || 'service_j6wp3lk';
+    var candTpl = document.getElementById('emailjsCandidateTemplateId').value.trim() || 'template_b1g2j7r';
     var errBox = document.getElementById('emailSettingsError');
 
     if (!adminEmails || !fromEmail || !fromName) {
@@ -1783,16 +1832,27 @@ function handleSaveEmailSettings(e) {
         from_name: fromName,
         send_candidate_ack: sendAck,
         candidate_email_notes: notes,
+        emailjs_public_key: pubKey,
+        emailjs_service_id: srvId,
+        emailjs_candidate_template_id: candTpl,
+        emailjs_admin_template_id: 'template_pltenq8',
         updated_at: new Date().toISOString()
     };
 
     saveEmailConfig(cfgObj);
 
+    // Initialize EmailJS in current session if key provided
+    if (typeof emailjs !== 'undefined' && pubKey) {
+        try {
+            emailjs.init({ publicKey: pubKey });
+        } catch(e){}
+    }
+
     if (typeof chFirestore !== 'undefined' && chFirestore) {
         chFirestore.collection('settings').doc('email_config').set(cfgObj)
             .then(function() {
                 closeModal('emailSettingsModal');
-                showToast('Email settings updated worldwide in real-time!');
+                showToast('Email & EmailJS credentials saved worldwide in real-time!');
             })
             .catch(function(err) {
                 closeModal('emailSettingsModal');
@@ -1809,6 +1869,11 @@ function sendTestEmail(type) {
     var fromEmail = document.getElementById('fromEmailAddress').value.trim();
     var fromName = document.getElementById('fromDisplayName').value.trim();
     var notes = document.getElementById('candidateEmailNotes').value.trim();
+    var pubKey = document.getElementById('emailjsPublicKey').value.trim() || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.publicKey : '');
+    var srvId = document.getElementById('emailjsServiceId').value.trim() || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.serviceId : 'service_j6wp3lk');
+    var candTpl = document.getElementById('emailjsCandidateTemplateId').value.trim() || (typeof emailjsConfig !== 'undefined' ? emailjsConfig.candidateTemplateId : 'template_b1g2j7r');
+    var adminTpl = typeof emailjsConfig !== 'undefined' ? (emailjsConfig.adminTemplateId || 'template_pltenq8') : 'template_pltenq8';
+    
     var btn = type === 'admin' ? document.getElementById('btnTestAdminEmail') : document.getElementById('btnTestCandidateEmail');
 
     var targetEmail = '';
@@ -1826,8 +1891,8 @@ function sendTestEmail(type) {
     }
 
     var emailSubject = type === 'admin'
-        ? '🧪 [TEST] New Candidate Booking Alert — John Doe (CITB Operatives Test)'
-        : '🧪 [TEST] Booking Request Received — #CH-TEST-9821 | Construction Helps';
+        ? '🚨 [TEST] New Candidate Booking Alert — John Doe (CITB Operatives Test)'
+        : 'Booking Request Received — #CH-TEST-9821 | Construction Helps';
 
     var payload = {
         _subject: emailSubject,
@@ -1882,11 +1947,13 @@ function sendTestEmail(type) {
         });
     };
 
-    var activeTpl = type === 'admin' 
-        ? (emailjsConfig.adminTemplateId || emailjsConfig.templateId) 
-        : (emailjsConfig.candidateTemplateId || emailjsConfig.templateId);
+    var activeTpl = type === 'admin' ? adminTpl : candTpl;
 
-    if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId && activeTpl) {
+    if (typeof emailjs !== 'undefined' && srvId && activeTpl && pubKey) {
+        try {
+            emailjs.init({ publicKey: pubKey });
+        } catch(e){}
+
         var emailjsParams = {
             candidate_name: 'John Doe',
             lead_id: '#CH-TEST-9821',
@@ -1903,7 +1970,7 @@ function sendTestEmail(type) {
             from_name: fromName,
             to_email: targetEmail
         };
-        emailjs.send(emailjsConfig.serviceId, activeTpl, emailjsParams)
+        emailjs.send(srvId, activeTpl, emailjsParams, pubKey)
             .then(function() {
                 if (btn) {
                     btn.disabled = false;
@@ -1934,7 +2001,7 @@ function sendTestEmail(type) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
             }
-            alert('Please configure EMAILJS_PUBLIC_KEY and EMAILJS_CANDIDATE_TEMPLATE_ID in GitHub Secrets to send candidate acknowledgment emails.');
+            alert('Please paste your EmailJS Public Key in Section 3 of the Email Settings modal and click Save.');
         }
     }
 }
