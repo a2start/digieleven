@@ -1915,11 +1915,27 @@ function sendTestEmail(type) {
                 alert('Test email successfully sent via EmailJS (From: ' + fromEmail + ') to ' + targetEmail + '!');
             })
             .catch(function(err) {
-                console.warn('EmailJS error, trying fallback:', err);
-                sendViaFormSubmit();
+                console.warn('EmailJS error:', err);
+                if (type === 'admin') {
+                    sendViaFormSubmit();
+                } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+                    }
+                    alert('EmailJS error: ' + (err.text || err.message || JSON.stringify(err)));
+                }
             });
     } else {
-        sendViaFormSubmit();
+        if (type === 'admin') {
+            sendViaFormSubmit();
+        } else {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+            }
+            alert('Please configure EMAILJS_PUBLIC_KEY and EMAILJS_CANDIDATE_TEMPLATE_ID in GitHub Secrets to send candidate acknowledgment emails.');
+        }
     }
 }
 

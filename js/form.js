@@ -276,31 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Send Candidate Acknowledgment Email if enabled
-                if (sendCandidateAck && leadData.email && leadData.email.indexOf('@') > -1) {
-                    var candidatePayload = {
-                        _subject: 'Booking Request Received — #' + leadId + ' | Construction Helps',
-                        _template: 'table',
-                        _captcha: 'false',
-                        _replyto: fromEmail,
-                        'Booking Reference': '#' + leadId,
-                        'Candidate Name': candidateName,
-                        'Service Requested': service,
-                        'Phone Number': leadData.phone,
-                        'Retake Protection': leadData.retake_package,
-                        'Preferred Venue / Date': leadData.preferred_location || 'Earliest available',
-                        'Important ID Requirement': 'You must bring an acceptable, original Primary ID (UK/Intl Passport, UK/EU Driving Licence, or verified eVisa) on test day.',
-                        'Next Steps': candidateNotes,
-                        'Support Helpline': '0800 002 5614 (' + fromEmail + ')',
-                        'Sender': fromName + ' <' + fromEmail + '>'
-                    };
-
-                    fetch('https://formsubmit.co/ajax/' + encodeURIComponent(leadData.email), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(candidatePayload)
-                    }).catch(function(){});
-                }
+                // (Admin alerts are handled via FormSubmit and EmailJS)
 
                 // Send via EmailJS (from info@constructionhelps.com)
                 if (typeof emailjs !== 'undefined' && typeof emailjsConfig !== 'undefined' && emailjsConfig.serviceId) {
