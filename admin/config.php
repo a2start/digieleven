@@ -3,8 +3,8 @@
 session_start();
 
 // Admin credentials (can be updated by the site administrator)
-define('ADMIN_USER', 'admin');
-define('ADMIN_PASS', 'admin123'); // Default admin password
+define('ADMIN_USER', 'ch-wazid-admin');
+define('ADMIN_PASS', 'Ahad@8940');
 
 // Data file path
 define('DATA_FILE', dirname(__DIR__) . '/data/submissions.json');
