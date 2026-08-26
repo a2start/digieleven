@@ -696,32 +696,43 @@
                 </div>
             </div>
 
-            <!-- Single Clean Options Dropdown Menu Button -->
-            <div class="menu-dropdown-wrap">
-                <button class="btn-menu-trigger" id="menuDropdownBtn" onclick="toggleMenuDropdown(event)">
-                    <i class="fa-solid fa-bars"></i>
-                    <span>Menu</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size: 11px;"></i>
-                </button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="userProfileBadge" style="display: inline-flex; align-items: center; gap: 6px; background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span id="headerUserName">Admin</span>
+                </div>
 
-                <!-- Dropdown Menu Card -->
-                <div class="dropdown-menu-card" id="headerDropdownMenu">
-                    <button class="dropdown-item" onclick="exportToCSV(); closeMenuDropdown();">
-                        <i class="fa-solid fa-file-csv" style="color: #059669;"></i>
-                        <span>Export All to CSV</span>
+                <!-- Clean Options Dropdown Menu Button -->
+                <div class="menu-dropdown-wrap">
+                    <button class="btn-menu-trigger" id="menuDropdownBtn" onclick="toggleMenuDropdown(event)">
+                        <i class="fa-solid fa-bars"></i>
+                        <span>Menu</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 11px;"></i>
                     </button>
-                    <button class="dropdown-item" onclick="openSettingsModal(); closeMenuDropdown();">
-                        <i class="fa-solid fa-key" style="color: var(--primary);"></i>
-                        <span>Change Login Info</span>
-                    </button>
-                    <a href="../index.html" target="_blank" class="dropdown-item" onclick="closeMenuDropdown();">
-                        <i class="fa-solid fa-arrow-up-right-from-square" style="color: #6366f1;"></i>
-                        <span>Visit Live Website</span>
-                    </a>
-                    <button class="dropdown-item danger" onclick="handleLogout(); closeMenuDropdown();">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Sign Out (Logout)</span>
-                    </button>
+
+                    <!-- Dropdown Menu Card -->
+                    <div class="dropdown-menu-card" id="headerDropdownMenu">
+                        <button class="dropdown-item" onclick="openTeamModal(); closeMenuDropdown();">
+                            <i class="fa-solid fa-users-gear" style="color: #0284c7;"></i>
+                            <span>Manage Team</span>
+                        </button>
+                        <button class="dropdown-item" onclick="openSettingsModal(); closeMenuDropdown();">
+                            <i class="fa-solid fa-key" style="color: var(--primary);"></i>
+                            <span>Admin Master Login</span>
+                        </button>
+                        <button class="dropdown-item" onclick="exportToCSV(); closeMenuDropdown();">
+                            <i class="fa-solid fa-file-csv" style="color: #059669;"></i>
+                            <span>Export All to CSV</span>
+                        </button>
+                        <a href="../index.html" target="_blank" class="dropdown-item" onclick="closeMenuDropdown();">
+                            <i class="fa-solid fa-arrow-up-right-from-square" style="color: #6366f1;"></i>
+                            <span>Visit Live Website</span>
+                        </a>
+                        <button class="dropdown-item danger" onclick="handleLogout(); closeMenuDropdown();">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Sign Out (Logout)</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -835,9 +846,9 @@
         <i class="fa-solid fa-file-arrow-down"></i>
         <span>Export</span>
     </button>
-    <button class="bottom-nav-item" onclick="openSettingsModal()">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>Security</span>
+    <button class="bottom-nav-item" onclick="openTeamModal()">
+        <i class="fa-solid fa-users-gear"></i>
+        <span>Team</span>
     </button>
     <button class="bottom-nav-item" onclick="handleLogout()" style="color: var(--danger);">
         <i class="fa-solid fa-right-from-bracket"></i>
@@ -864,14 +875,14 @@
 <div class="modal" id="settingsModal">
     <div class="modal-content" style="max-width: 450px;">
         <div class="modal-header">
-            <h3 class="modal-title"><i class="fa-solid fa-key" style="color: var(--primary);"></i> Change Admin Login</h3>
+            <h3 class="modal-title"><i class="fa-solid fa-key" style="color: var(--primary);"></i> Master Admin Login</h3>
             <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
         </div>
         <form onsubmit="handleSaveCredentials(event)">
             <div id="settingsError" style="display: none; background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px;"></div>
             
             <div class="form-group">
-                <label for="newUsername">Admin Username / Login ID *</label>
+                <label for="newUsername">Master Username / Login ID *</label>
                 <div class="input-wrap">
                     <i class="fa-solid fa-user left-icon"></i>
                     <input type="text" id="newUsername" class="form-input" required spellcheck="false" autocomplete="username">
@@ -897,6 +908,98 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button type="button" class="btn-menu-trigger" onclick="closeModal('settingsModal')">Cancel</button>
                 <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 20px;">Save Credentials</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Team Members List Modal -->
+<div class="modal" id="teamModal">
+    <div class="modal-content" style="max-width: 680px;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-users-gear" style="color: var(--primary);"></i> Team Members Access</h3>
+            <button class="close-modal" onclick="closeModal('teamModal')">&times;</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <p style="margin: 0; font-size: 13.5px; color: var(--text-muted);">Staff members who can log in to view and manage candidate leads.</p>
+            <button type="button" class="btn-primary-app" style="width: auto; padding: 7px 16px; font-size: 13px;" onclick="openAddMemberModal()">
+                <i class="fa-solid fa-user-plus"></i> Add Team Member
+            </button>
+        </div>
+
+        <div id="teamMemberList" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+            <!-- Populated via JavaScript -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn-primary-app" style="width: auto; padding: 8px 18px; font-size: 13.5px;" onclick="closeModal('teamModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Team Member Modal -->
+<div class="modal" id="addMemberModal">
+    <div class="modal-content" style="max-width: 480px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="addMemberModalTitle"><i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Add Team Member</h3>
+            <button class="close-modal" onclick="closeModal('addMemberModal')">&times;</button>
+        </div>
+        <form onsubmit="handleSaveTeamMember(event)">
+            <input type="hidden" id="memberEditOriginalUsername">
+            <div id="memberError" style="display: none; background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px;"></div>
+
+            <div class="form-group">
+                <label for="memberName">Full Name *</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-id-badge left-icon"></i>
+                    <input type="text" id="memberName" class="form-input" placeholder="e.g. Sarah Jenkins" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="memberUsername">Username / Login ID *</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-user left-icon"></i>
+                    <input type="text" id="memberUsername" class="form-input" placeholder="e.g. sarah_advisor" required spellcheck="false" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="memberPassword">Password *</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-lock left-icon"></i>
+                    <input type="password" id="memberPassword" class="form-input" placeholder="Min 6 characters" required autocomplete="new-password">
+                    <i class="fa-regular fa-eye right-icon" id="memberPasswordToggle" onclick="togglePasswordVisibility('memberPassword', 'memberPasswordToggle')"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="memberRole">Role</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-shield left-icon"></i>
+                    <select id="memberRole" class="form-input" style="padding-left: 36px;">
+                        <option value="Booking Advisor">Booking Advisor (Process &amp; Update Leads)</option>
+                        <option value="Admin">Administrator (Full Access)</option>
+                        <option value="Support Agent">Support Agent (View Only)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="memberStatus">Login Status</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-toggle-on left-icon"></i>
+                    <select id="memberStatus" class="form-input" style="padding-left: 36px;">
+                        <option value="Active">Active (Can Login)</option>
+                        <option value="Disabled">Disabled (Access Blocked)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-menu-trigger" onclick="closeModal('addMemberModal')">Cancel</button>
+                <button type="submit" class="btn-primary-app" style="width: auto; padding: 10px 20px;">Save Team Member</button>
             </div>
         </form>
     </div>
@@ -1059,14 +1162,86 @@ function checkAuth() {
 
     if (isAuth) {
         sessionStorage.setItem('admin_login_time', String(now));
+        var loggedUser = sessionStorage.getItem('admin_user_name') || 'Admin';
+        var loggedRole = sessionStorage.getItem('admin_user_role') || 'Administrator';
+        var headerUser = document.getElementById('headerUserName');
+        if (headerUser) headerUser.innerText = loggedUser + ' (' + loggedRole + ')';
+
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('dashboardScreen').style.display = 'block';
         initRealtimeSubmissions();
+        initRealtimeTeam();
     } else {
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboardScreen').style.display = 'none';
         checkLockout();
     }
+}
+
+// Multi-User Login Authentication (Master Admin + Team Members)
+function verifyLoginCredentials(user, pass, callback) {
+    // 1. Check Master Admin Credentials first
+    fetchCloudCredentials(function(currentCreds) {
+        if (user === currentCreds.user && pass === currentCreds.pass) {
+            callback(true, { name: 'Master Admin', role: 'Administrator', username: user });
+            return;
+        }
+
+        // 2. Check Team Members in Cloud Firestore
+        if (typeof chFirestore !== 'undefined' && chFirestore) {
+            chFirestore.collection('team_members').doc(user).get()
+                .then(function(doc) {
+                    if (doc.exists) {
+                        var member = doc.data();
+                        if (member.password === pass) {
+                            if (member.status === 'Disabled') {
+                                callback(false, null, 'Account is disabled. Please contact the administrator.');
+                            } else {
+                                callback(true, member);
+                            }
+                            return;
+                        }
+                    }
+                    // Fallback to local team list if document key differed
+                    var localTeam = getTeamMembersList();
+                    var found = localTeam.find(function(m) { return m.username.toLowerCase() === user.toLowerCase() && m.password === pass; });
+                    if (found) {
+                        if (found.status === 'Disabled') {
+                            callback(false, null, 'Account is disabled. Please contact the administrator.');
+                        } else {
+                            callback(true, found);
+                        }
+                    } else {
+                        callback(false, null, 'Invalid username or password.');
+                    }
+                })
+                .catch(function() {
+                    var localTeam = getTeamMembersList();
+                    var found = localTeam.find(function(m) { return m.username.toLowerCase() === user.toLowerCase() && m.password === pass; });
+                    if (found) {
+                        if (found.status === 'Disabled') {
+                            callback(false, null, 'Account is disabled.');
+                        } else {
+                            callback(true, found);
+                        }
+                    } else {
+                        callback(false, null, 'Invalid username or password.');
+                    }
+                });
+        } else {
+            var localTeam = getTeamMembersList();
+            var found = localTeam.find(function(m) { return m.username.toLowerCase() === user.toLowerCase() && m.password === pass; });
+            if (found) {
+                if (found.status === 'Disabled') {
+                    callback(false, null, 'Account is disabled.');
+                } else {
+                    callback(true, found);
+                }
+            } else {
+                callback(false, null, 'Invalid username or password.');
+            }
+        }
+    });
 }
 
 function handleLogin(e) {
@@ -1082,21 +1257,23 @@ function handleLogin(e) {
     var user = document.getElementById('adminUsername').value.trim();
     var pass = document.getElementById('adminPassword').value.trim();
 
-    fetchCloudCredentials(function(currentCreds) {
+    verifyLoginCredentials(user, pass, function(isValid, memberData, customErrMsg) {
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right"></i>';
         }
 
-        if (user === currentCreds.user && pass === currentCreds.pass) {
+        if (isValid && memberData) {
             sessionStorage.setItem('admin_authenticated', 'true');
             sessionStorage.setItem('admin_login_time', String(Date.now()));
+            sessionStorage.setItem('admin_user_name', memberData.name || memberData.username);
+            sessionStorage.setItem('admin_user_role', memberData.role || 'Advisor');
             sessionStorage.removeItem(FAILED_ATTEMPTS_KEY);
             sessionStorage.removeItem(LOCKOUT_UNTIL_KEY);
             document.getElementById('loginError').style.display = 'none';
             document.getElementById('adminPassword').value = '';
             checkAuth();
-            showToast('Welcome back, Admin!');
+            showToast('Welcome back, ' + (memberData.name || memberData.username) + '!');
         } else {
             var fails = parseInt(sessionStorage.getItem(FAILED_ATTEMPTS_KEY) || '0', 10) + 1;
             sessionStorage.setItem(FAILED_ATTEMPTS_KEY, String(fails));
@@ -1107,7 +1284,7 @@ function handleLogin(e) {
             } else {
                 var err = document.getElementById('loginError');
                 err.style.display = 'flex';
-                document.getElementById('loginErrorMsg').innerText = 'Invalid credentials (' + (5 - fails) + ' attempts remaining)';
+                document.getElementById('loginErrorMsg').innerText = customErrMsg || ('Invalid credentials (' + (5 - fails) + ' attempts remaining)');
             }
         }
     });
@@ -1116,6 +1293,8 @@ function handleLogin(e) {
 function handleLogout() {
     sessionStorage.removeItem('admin_authenticated');
     sessionStorage.removeItem('admin_login_time');
+    sessionStorage.removeItem('admin_user_name');
+    sessionStorage.removeItem('admin_user_role');
     checkAuth();
 }
 
@@ -1160,7 +1339,7 @@ function handleSaveCredentials(e) {
             updatedAt: new Date().toISOString()
         }).then(function() {
             closeModal('settingsModal');
-            showToast('Credentials updated worldwide in real-time!');
+            showToast('Master Admin credentials updated worldwide in real-time!');
         }).catch(function(err) {
             closeModal('settingsModal');
             showToast('Saved locally. (Cloud notice: ' + err.message + ')');
@@ -1169,6 +1348,259 @@ function handleSaveCredentials(e) {
         closeModal('settingsModal');
         showToast('Admin login credentials updated successfully!');
     }
+}
+
+// ==========================================
+// TEAM MEMBERS MANAGEMENT & FIREBASE SYNC
+// ==========================================
+var teamMembersData = [];
+var teamFirestoreUnsubscribe = null;
+
+function getTeamMembersList() {
+    try {
+        var raw = localStorage.getItem('digieleven_team_members');
+        return raw ? JSON.parse(raw) : [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function saveTeamMembersList(list) {
+    teamMembersData = list;
+    localStorage.setItem('digieleven_team_members', JSON.stringify(list));
+    renderTeamList();
+}
+
+function initRealtimeTeam() {
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        if (teamFirestoreUnsubscribe) {
+            try { teamFirestoreUnsubscribe(); } catch(e){}
+        }
+
+        teamFirestoreUnsubscribe = chFirestore.collection('team_members').onSnapshot(function(snapshot) {
+            var list = [];
+            snapshot.forEach(function(doc) {
+                var d = doc.data();
+                d.username = doc.id || d.username;
+                list.push(d);
+            });
+            teamMembersData = list;
+            localStorage.setItem('digieleven_team_members', JSON.stringify(list));
+            renderTeamList();
+        }, function(err) {
+            console.warn('Team listener notice:', err);
+            teamMembersData = getTeamMembersList();
+            renderTeamList();
+        });
+    } else {
+        teamMembersData = getTeamMembersList();
+        renderTeamList();
+    }
+}
+
+function openTeamModal() {
+    initRealtimeTeam();
+    renderTeamList();
+    document.getElementById('teamModal').classList.add('active');
+}
+
+function openAddMemberModal() {
+    document.getElementById('addMemberModalTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Add Team Member';
+    document.getElementById('memberEditOriginalUsername').value = '';
+    document.getElementById('memberName').value = '';
+    document.getElementById('memberUsername').value = '';
+    document.getElementById('memberUsername').disabled = false;
+    document.getElementById('memberPassword').value = '';
+    document.getElementById('memberRole').value = 'Booking Advisor';
+    document.getElementById('memberStatus').value = 'Active';
+    document.getElementById('memberError').style.display = 'none';
+    document.getElementById('addMemberModal').classList.add('active');
+}
+
+function editTeamMember(username) {
+    var member = teamMembersData.find(function(m) { return m.username === username; });
+    if (!member) return;
+
+    document.getElementById('addMemberModalTitle').innerHTML = '<i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Edit Team Member';
+    document.getElementById('memberEditOriginalUsername').value = member.username;
+    document.getElementById('memberName').value = member.name || '';
+    document.getElementById('memberUsername').value = member.username;
+    document.getElementById('memberUsername').disabled = true;
+    document.getElementById('memberPassword').value = member.password || '';
+    document.getElementById('memberRole').value = member.role || 'Booking Advisor';
+    document.getElementById('memberStatus').value = member.status || 'Active';
+    document.getElementById('memberError').style.display = 'none';
+    document.getElementById('addMemberModal').classList.add('active');
+}
+
+function toggleTeamMemberStatus(username) {
+    var member = teamMembersData.find(function(m) { return m.username === username; });
+    if (!member) return;
+
+    var newStatus = member.status === 'Active' ? 'Disabled' : 'Active';
+    member.status = newStatus;
+    saveTeamMembersList(teamMembersData);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('team_members').doc(username).update({ status: newStatus }).catch(function(){});
+    }
+    showToast(member.name + ' status changed to: ' + newStatus);
+}
+
+function deleteTeamMember(username) {
+    var member = teamMembersData.find(function(m) { return m.username === username; });
+    var displayName = member ? member.name : username;
+    if (!confirm('Are you sure you want to remove team member "' + displayName + '"? They will no longer be able to log in.')) return;
+
+    teamMembersData = teamMembersData.filter(function(m) { return m.username !== username; });
+    saveTeamMembersList(teamMembersData);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('team_members').doc(username).delete().catch(function(){});
+    }
+    showToast('Team member removed successfully.');
+}
+
+function handleSaveTeamMember(e) {
+    e.preventDefault();
+    var origUsername = document.getElementById('memberEditOriginalUsername').value.trim();
+    var name = document.getElementById('memberName').value.trim();
+    var username = document.getElementById('memberUsername').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    var password = document.getElementById('memberPassword').value.trim();
+    var role = document.getElementById('memberRole').value;
+    var status = document.getElementById('memberStatus').value;
+    var errBox = document.getElementById('memberError');
+
+    if (!name || !username || !password) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Please complete all required fields.';
+        return;
+    }
+    if (password.length < 6) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Password must be at least 6 characters.';
+        return;
+    }
+
+    // Check duplicate username if new
+    if (!origUsername && teamMembersData.some(function(m) { return m.username.toLowerCase() === username; })) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Username "' + username + '" is already taken. Please choose another.';
+        return;
+    }
+
+    var memberObj = {
+        name: name,
+        username: username,
+        password: password,
+        role: role,
+        status: status,
+        updated_at: new Date().toISOString()
+    };
+
+    var existingIdx = teamMembersData.findIndex(function(m) { return m.username === (origUsername || username); });
+    if (existingIdx > -1) {
+        teamMembersData[existingIdx] = memberObj;
+    } else {
+        memberObj.created_at = new Date().toISOString();
+        teamMembersData.push(memberObj);
+    }
+
+    saveTeamMembersList(teamMembersData);
+
+    if (typeof chFirestore !== 'undefined' && chFirestore) {
+        chFirestore.collection('team_members').doc(username).set(memberObj)
+            .then(function() {
+                closeModal('addMemberModal');
+                showToast('Team member saved worldwide in real-time!');
+            })
+            .catch(function(err) {
+                closeModal('addMemberModal');
+                showToast('Saved locally. (Cloud notice: ' + err.message + ')');
+            });
+    } else {
+        closeModal('addMemberModal');
+        showToast('Team member saved successfully!');
+    }
+}
+
+function renderTeamList() {
+    var listContainer = document.getElementById('teamMemberList');
+    if (!listContainer) return;
+
+    var masterCreds = getAdminCredentials();
+    var html = `
+        <!-- Master Administrator Card -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary); padding: 14px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; background: #e0f2fe; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 14px;">Master Administrator</div>
+                    <div style="font-size: 12.5px; color: var(--text-muted);">Login ID: <code>${masterCreds.user}</code></div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge-pill" style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 11px;">Primary Owner</span>
+                <button type="button" class="btn-menu-trigger" style="padding: 4px 10px; font-size: 12px;" onclick="openSettingsModal()">
+                    <i class="fa-solid fa-key"></i> Edit Login
+                </button>
+            </div>
+        </div>
+    `;
+
+    if (teamMembersData.length === 0) {
+        html += `
+            <div style="text-align: center; padding: 25px; color: var(--text-muted); background: #fff; border: 1px dashed var(--border); border-radius: 8px;">
+                <i class="fa-solid fa-users" style="font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.35;"></i>
+                <div style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">No Additional Team Members Yet</div>
+                <div style="font-size: 12.5px; margin-top: 3px;">Click "Add Team Member" above to create staff logins for your advisors.</div>
+            </div>
+        `;
+    } else {
+        teamMembersData.forEach(function(member) {
+            var isActive = (member.status || 'Active') === 'Active';
+            var roleBadgeColor = member.role === 'Admin' ? 'background: #fef3c7; color: #92400e;' : (member.role === 'Support Agent' ? 'background: #f3f4f6; color: #374151;' : 'background: #dbeafe; color: #1e40af;');
+            var statusBadge = isActive 
+                ? '<span class="badge-pill" style="background: #dcfce7; color: #15803d; font-size: 11px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Active</span>'
+                : '<span class="badge-pill" style="background: #fee2e2; color: #991b1b; font-size: 11px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Disabled</span>';
+
+            html += `
+                <div style="background: #ffffff; border: 1px solid var(--border); padding: 14px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: #f1f5f9; color: var(--text-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
+                            ${(member.name || member.username || 'T').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-main); font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <span>${member.name || member.username}</span>
+                                <span class="badge-pill" style="${roleBadgeColor} font-size: 10.5px; font-weight: 700; padding: 2px 7px;">${member.role || 'Advisor'}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                                Login ID: <code>${member.username}</code> &bull; Pass: <code>••••••</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        ${statusBadge}
+                        <button type="button" class="btn-menu-trigger" style="padding: 4px 8px; font-size: 12px;" title="${isActive ? 'Disable Login' : 'Enable Login'}" onclick="toggleTeamMemberStatus('${member.username}')">
+                            <i class="fa-solid ${isActive ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                        </button>
+                        <button type="button" class="btn-menu-trigger" style="padding: 4px 8px; font-size: 12px;" title="Edit" onclick="editTeamMember('${member.username}')">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button type="button" class="btn-menu-trigger" style="padding: 4px 8px; font-size: 12px; color: var(--danger);" title="Delete" onclick="deleteTeamMember('${member.username}')">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    listContainer.innerHTML = html;
 }
 
 // Data management & Real-time Live Firestore Sync
