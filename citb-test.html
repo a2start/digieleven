@@ -27,6 +27,17 @@
     <!-- Responsive -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <style>
+        @media (min-width: 992px) {
+            .sticky-booking-box {
+                position: -webkit-sticky;
+                position: sticky;
+                top: 95px;
+                z-index: 50;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -240,7 +251,7 @@
 
                     <!-- 5. Step 2: Candidate Details & Booking Flow Form -->
                     <div class="content-column col-lg-5 col-md-12 col-sm-12" id="booking-form">
-                        <div class="inner-column" style="background: #fdfdfd; border: 1px solid #e0e6ed; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+                        <div class="inner-column sticky-booking-box" style="background: #fdfdfd; border: 1px solid #e0e6ed; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
                             <div style="border-bottom: 2px solid #104cba; padding-bottom: 10px; margin-bottom: 20px;">
                                 <span style="color: #104cba; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Step 2 of 2 &bull; Candidate Details</span>
                                 <h3 style="color: #222; font-size: 22px; margin-top: 4px; font-weight: 700;">Candidate Booking Form</h3>
