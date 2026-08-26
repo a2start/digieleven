@@ -160,10 +160,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST" action="login.php">
             <div class="form-group">
-                <label for="username">Admin Username</label>
+                <label for="username">Username / ID</label>
                 <div class="input-group">
                     <i class="fa-solid fa-user"></i>
-                    <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required autofocus value="admin">
+                    <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required autofocus autocomplete="username" spellcheck="false">
                 </div>
             </div>
 
@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="password">Password</label>
                 <div class="input-group">
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
                 </div>
             </div>
 
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="login-footer">
-        Default: <code>admin</code> / <code>admin123</code> &bull; <a href="../index.html" style="color: #104cba; text-decoration: none;">&larr; Back to Site</a>
+        <a href="../index.html" style="color: #104cba; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Return to Website</a>
     </div>
 </div>
 

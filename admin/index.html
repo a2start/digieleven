@@ -65,17 +65,31 @@
         }
         .input-group {
             position: relative;
+            display: flex;
+            align-items: center;
         }
-        .input-group i {
+        .input-icon-left {
             position: absolute;
             left: 14px;
-            top: 13px;
             color: #94a3b8;
             font-size: 15px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .input-icon-toggle {
+            position: absolute;
+            right: 14px;
+            color: #94a3b8;
+            font-size: 15px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .input-icon-toggle:hover {
+            color: #104cba;
         }
         .form-control {
             width: 100%;
-            padding: 11px 14px 11px 40px;
+            padding: 11px 40px 11px 40px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 14px;
@@ -98,8 +112,12 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-submit:hover {
+        .btn-submit:hover:not(:disabled) {
             background: #0d3888;
+        }
+        .btn-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
         .alert-error {
             background: #fee2e2;
@@ -343,7 +361,7 @@
         <div class="login-header">
             <img src="../images/construction/construction_logo.svg" alt="Construction Helps" style="max-height: 48px;">
             <h2>Admin Portal</h2>
-            <p>Sign in to view candidate bookings &amp; form submissions</p>
+            <p>Authorized personnel only</p>
         </div>
 
         <div class="login-body">
@@ -354,29 +372,30 @@
 
             <form id="adminLoginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label for="adminUsername">Username</label>
+                    <label for="adminUsername">Username / ID</label>
                     <div class="input-group">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" id="adminUsername" class="form-control" placeholder="admin" required autofocus>
+                        <i class="fa-solid fa-user input-icon-left"></i>
+                        <input type="text" id="adminUsername" class="form-control" placeholder="Enter username" required autocomplete="username" spellcheck="false" autofocus>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="adminPassword">Password</label>
                     <div class="input-group">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="adminPassword" class="form-control" placeholder="Enter password" required>
+                        <i class="fa-solid fa-lock input-icon-left"></i>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+                        <i class="fa-solid fa-eye input-icon-toggle" id="toggleLoginPassword" onclick="togglePasswordVisibility('adminPassword', 'toggleLoginPassword')"></i>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit">
+                <button type="submit" class="btn-submit" id="btnSignIn">
                     <i class="fa-solid fa-right-to-bracket"></i> Sign In
                 </button>
             </form>
         </div>
 
         <div style="background: #f8fafc; padding: 14px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
-            <span id="loginHint">Default: <code>admin</code> / <code>admin123</code></span> &bull; <a href="../index.html" style="color: #104cba; text-decoration: none;">Return to Website</a>
+            <a href="../index.html" style="color: #104cba; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Return to Website</a>
         </div>
     </div>
 </div>
@@ -503,17 +522,17 @@
             
             <div class="form-group">
                 <label for="newUsername">New Admin Username / Login ID *</label>
-                <input type="text" id="newUsername" class="form-control" required style="padding-left: 12px;">
+                <input type="text" id="newUsername" class="form-control" required style="padding-left: 12px;" spellcheck="false" autocomplete="username">
             </div>
 
             <div class="form-group">
                 <label for="newPassword">New Password *</label>
-                <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required style="padding-left: 12px;">
+                <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required style="padding-left: 12px;" autocomplete="new-password">
             </div>
 
             <div class="form-group">
                 <label for="confirmPassword">Confirm New Password *</label>
-                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat new password" required style="padding-left: 12px;">
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat new password" required style="padding-left: 12px;" autocomplete="new-password">
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
@@ -525,7 +544,23 @@
 </div>
 
 <script>
-// Credentials Management
+// Toggle Password Eye Icon
+function togglePasswordVisibility(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Credentials & Hash Management
 function getAdminCredentials() {
     try {
         var raw = localStorage.getItem('digieleven_admin_creds');
@@ -543,40 +578,93 @@ function setAdminCredentials(user, pass) {
     localStorage.setItem('digieleven_admin_creds', JSON.stringify({ user: user, pass: pass }));
 }
 
-// Authentication check
+// Rate Limiting & Lockout
+var FAILED_ATTEMPTS_KEY = 'admin_failed_attempts';
+var LOCKOUT_UNTIL_KEY = 'admin_lockout_until';
+
+function checkLockout() {
+    var lockoutUntil = parseInt(sessionStorage.getItem(LOCKOUT_UNTIL_KEY) || '0', 10);
+    var now = Date.now();
+    var btn = document.getElementById('btnSignIn');
+    var err = document.getElementById('loginError');
+    var errMsg = document.getElementById('loginErrorMsg');
+
+    if (lockoutUntil > now) {
+        var remainingSec = Math.ceil((lockoutUntil - now) / 1000);
+        if (btn) btn.disabled = true;
+        if (err && errMsg) {
+            err.style.display = 'flex';
+            errMsg.innerText = 'Too many failed login attempts. Please wait ' + remainingSec + 's.';
+        }
+        setTimeout(checkLockout, 1000);
+        return true;
+    } else {
+        if (btn) btn.disabled = false;
+        if (err && errMsg && errMsg.innerText.indexOf('Too many failed') > -1) {
+            err.style.display = 'none';
+        }
+        return false;
+    }
+}
+
+// Authentication check with 30-minute auto-expiry
 function checkAuth() {
     var isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
+    var loginTime = parseInt(sessionStorage.getItem('admin_login_time') || '0', 10);
+    var now = Date.now();
+
+    // 30-minute session expiry
+    if (isAuth && (now - loginTime > 30 * 60 * 1000)) {
+        handleLogout();
+        return;
+    }
+
     if (isAuth) {
+        sessionStorage.setItem('admin_login_time', String(now));
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('dashboardScreen').style.display = 'block';
         loadSubmissions();
     } else {
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboardScreen').style.display = 'none';
-        var creds = getAdminCredentials();
-        document.getElementById('adminUsername').value = creds.user;
+        checkLockout();
     }
 }
 
 function handleLogin(e) {
     e.preventDefault();
+    if (checkLockout()) return;
+
     var user = document.getElementById('adminUsername').value.trim();
     var pass = document.getElementById('adminPassword').value.trim();
     var currentCreds = getAdminCredentials();
 
     if (user === currentCreds.user && pass === currentCreds.pass) {
         sessionStorage.setItem('admin_authenticated', 'true');
+        sessionStorage.setItem('admin_login_time', String(Date.now()));
+        sessionStorage.removeItem(FAILED_ATTEMPTS_KEY);
+        sessionStorage.removeItem(LOCKOUT_UNTIL_KEY);
         document.getElementById('loginError').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
         checkAuth();
     } else {
-        var err = document.getElementById('loginError');
-        err.style.display = 'flex';
-        document.getElementById('loginErrorMsg').innerText = 'Invalid username or password. Please try again.';
+        var fails = parseInt(sessionStorage.getItem(FAILED_ATTEMPTS_KEY) || '0', 10) + 1;
+        sessionStorage.setItem(FAILED_ATTEMPTS_KEY, String(fails));
+
+        if (fails >= 5) {
+            sessionStorage.setItem(LOCKOUT_UNTIL_KEY, String(Date.now() + 60000)); // 60s lockout
+            checkLockout();
+        } else {
+            var err = document.getElementById('loginError');
+            err.style.display = 'flex';
+            document.getElementById('loginErrorMsg').innerText = 'Invalid username or password. (' + (5 - fails) + ' attempts remaining)';
+        }
     }
 }
 
 function handleLogout() {
     sessionStorage.removeItem('admin_authenticated');
+    sessionStorage.removeItem('admin_login_time');
     checkAuth();
 }
 
@@ -601,9 +689,9 @@ function handleSaveCredentials(e) {
         errBox.innerText = 'Username cannot be empty.';
         return;
     }
-    if (pass.length < 4) {
+    if (pass.length < 6) {
         errBox.style.display = 'block';
-        errBox.innerText = 'Password must be at least 4 characters long.';
+        errBox.innerText = 'Password must be at least 6 characters long for security.';
         return;
     }
     if (pass !== confirm) {
@@ -617,7 +705,7 @@ function handleSaveCredentials(e) {
 
     var alertBanner = document.getElementById('alertBanner');
     var alertMsg = document.getElementById('alertBannerMsg');
-    alertMsg.innerText = 'Admin login ID and password updated successfully! Next time log in with your new credentials.';
+    alertMsg.innerText = 'Admin login ID and password updated successfully! Keep your new credentials safe.';
     alertBanner.style.display = 'block';
     setTimeout(function() { alertBanner.style.display = 'none'; }, 6000);
 }
