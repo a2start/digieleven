@@ -1,6 +1,6 @@
 function validationUsername() {
-    let usernameElem = document.getElementById('username');
     let firstNameElem = document.getElementById('first_name');
+    let usernameElem = document.getElementById('username');
     let usernameError = document.getElementById('username-error');
     
     if (firstNameElem) {
@@ -54,7 +54,7 @@ function validationPhone(){
     if(phone.length === 0){
         phoneError.innerHTML = 'Phone number is required';
         return false;
-    }else if(phone.length < 9){
+    }else if(phone.length < 8){
         phoneError.innerHTML = 'Please enter a valid phone number';
         return false;
     }else{
@@ -73,7 +73,7 @@ function validateForm(){
         if(submitError){
             submitError.style.display = 'block';
             submitError.style.color = 'red';
-            submitError.innerHTML = 'Please check and fix the errors above before submitting.';
+            submitError.innerHTML = 'Please check and complete all required fields.';
             setTimeout(function(){ submitError.style.display = 'none'; }, 4000);
         }
         return false;
@@ -81,13 +81,13 @@ function validateForm(){
         if(submitError){
             submitError.style.display = 'block';
             submitError.style.color = 'green';
-            submitError.innerHTML = 'Submitting your request...';
+            submitError.innerHTML = 'Processing your booking...';
         }
         return true;
     }
 }
 
-// Save lead to browser localStorage so static GitHub Pages retains all leads for the Admin Portal
+// Save lead to browser localStorage
 function saveLeadToStorage(lead) {
     try {
         var existing = JSON.parse(localStorage.getItem('digieleven_submissions') || '[]');
@@ -99,14 +99,16 @@ function saveLeadToStorage(lead) {
     }
 }
 
-// AJAX Form Handler for seamless submission without 405/page redirect issues on GitHub Pages
+// Global Instant Form Submission Handler
 document.addEventListener('DOMContentLoaded', function() {
-    var forms = document.querySelectorAll('form[action*="controller/home-form.php"], form#citb-booking-form, form.contact-form form');
+    var forms = document.querySelectorAll('form[action*="controller/home-form.php"], form#citb-booking-form, form.form-register');
     
     forms.forEach(function(form) {
         form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
             if (!validateForm()) {
-                e.preventDefault();
                 return false;
             }
 
@@ -116,16 +118,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.innerHTML = 'Processing Booking...';
             }
 
-            e.preventDefault();
-
             var formData = new FormData(form);
             var leadId = 'CH-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.floor(1000 + Math.random() * 9000);
             var now = new Date();
             var timestamp = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
 
-            var firstName = formData.get('first_name') || '';
-            var lastName = formData.get('last_name') || '';
-            var candidateName = (firstName + ' ' + lastName).trim() || formData.get('username') || 'Valued Candidate';
+            var firstName = (formData.get('first_name') || '').trim();
+            var lastName = (formData.get('last_name') || '').trim();
+            var candidateName = (firstName + ' ' + lastName).trim() || (formData.get('username') || '').trim() || 'Candidate';
+            var service = formData.get('subject') || formData.get('service_type') || 'CITB Test Booking (£45.00)';
 
             var leadData = {
                 id: leadId,
@@ -138,67 +139,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 address_line1: formData.get('address_line1') || '',
                 city: formData.get('city') || '',
                 postcode: formData.get('postcode') || '',
-                phone: formData.get('phone') || '',
-                email: formData.get('email') || '',
-                subject: formData.get('subject') || formData.get('service_type') || 'CITB Test Booking',
-                test_type: formData.get('test_type') || formData.get('service_type') || 'CITB Test',
+                phone: (formData.get('phone') || '').trim(),
+                email: (formData.get('email') || '').trim(),
+                subject: service,
+                test_type: formData.get('test_type') || service,
                 retake_package: formData.get('retake_package') ? 'Yes (+£20.00)' : 'No',
                 preferred_location: formData.get('preferred_location') || '',
                 source_page: window.location.pathname.split('/').pop() || 'Website Form',
                 status: 'New'
             };
 
-            // Save lead locally immediately (ensures zero data loss on GitHub Pages)
+            // 1. Immediately record in LocalStorage
             saveLeadToStorage(leadData);
 
-            var formAction = form.getAttribute('action') || 'controller/home-form.php';
-
-            // Show instant visual confirmation UI
-            function showSuccessUI(ref) {
-                var container = form.closest('.contact-form') || form.closest('.price-card-box') || form.parentElement;
-                if (container) {
-                    container.innerHTML = `
-                        <div style="background: #ffffff; border-radius: 8px; border: 2px solid #28a745; padding: 35px 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin: 20px 0;">
-                            <div style="width: 65px; height: 65px; background: #e8f5e9; color: #2e7d32; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 18px;">&#10004;</div>
-                            <h3 style="color: #104cba; font-weight: 700; margin-bottom: 8px;">Booking Request Received!</h3>
-                            <p style="font-size: 15px; color: #444; margin-bottom: 15px;">Your booking reference number is: <strong style="color: #104cba; font-size: 16px;">#${ref}</strong></p>
-                            <div style="background: #f8fafc; padding: 14px; border-radius: 6px; text-align: left; font-size: 13.5px; color: #555; margin-bottom: 20px; border-left: 4px solid #104cba;">
-                                <p style="margin: 0 0 6px 0;"><strong>&bull; Confirmation:</strong> Your candidate details have been saved.</p>
-                                <p style="margin: 0;"><strong>&bull; Next Steps:</strong> An administrator will contact you shortly on <strong>${leadData.phone || 'your phone'}</strong> to confirm your test slot and centre details.</p>
-                            </div>
-                            <a href="index.html" class="theme-btn btn-style-one" style="display: inline-block; padding: 10px 24px; font-size: 14px; text-decoration: none;">Return to Home</a>
+            // 2. Render Success UI in place
+            var targetBox = document.getElementById('booking-form') || form.closest('.inner-column') || form.closest('.contact-form') || form.parentElement;
+            
+            if (targetBox) {
+                targetBox.innerHTML = `
+                    <div style="background: #ffffff; border-radius: 8px; border: 2px solid #28a745; padding: 35px 25px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.06); animation: fadeIn 0.4s ease-in-out;">
+                        <div style="width: 70px; height: 70px; background: #e8f5e9; color: #2e7d32; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 18px;">&#10004;</div>
+                        <h3 style="color: #104cba; font-weight: 700; font-size: 22px; margin-bottom: 8px;">Booking Request Received!</h3>
+                        <p style="font-size: 15px; color: #333; margin-bottom: 15px;">Thank you, <strong>${candidateName}</strong>. Your reference ID is: <strong style="color: #104cba; font-size: 17px;">#${leadId}</strong></p>
+                        
+                        <div style="background: #f8fafc; padding: 16px; border-radius: 6px; text-align: left; font-size: 13.5px; color: #475569; margin-bottom: 20px; border-left: 4px solid #104cba; line-height: 1.6;">
+                            <div style="margin-bottom: 5px;"><strong>&bull; Service:</strong> ${service}</div>
+                            <div style="margin-bottom: 5px;"><strong>&bull; Candidate Phone:</strong> ${leadData.phone}</div>
+                            <div style="margin-bottom: 5px;"><strong>&bull; Candidate Email:</strong> ${leadData.email}</div>
+                            <div><strong>&bull; Next Steps:</strong> An advisor from Construction Helps will call you on <strong>${leadData.phone}</strong> to confirm your nearest test centre slot and ID requirements.</div>
                         </div>
-                    `;
-                } else {
-                    alert('Thank you! Your booking request (Ref: #' + ref + ') has been submitted successfully.');
-                    form.reset();
-                }
+
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <a href="index.html" class="theme-btn btn-style-one" style="padding: 10px 22px; font-size: 14px; text-decoration: none;">Return to Home</a>
+                            <a href="citb-test.html" class="theme-btn btn-style-two" style="padding: 10px 22px; font-size: 14px; text-decoration: none; background: #64748b; color: #fff;">Book Another Test</a>
+                        </div>
+                    </div>
+                `;
+                targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                alert('Thank you, ' + candidateName + '! Your booking request (Ref: #' + leadId + ') has been received successfully.');
+                form.reset();
             }
 
-            // Attempt backend transmission
-            fetch(formAction, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(function(response) {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    // Even if static host returns 404/405, we caught the lead locally
-                    return { success: true, lead_id: leadId };
-                }
-            })
-            .then(function(data) {
-                showSuccessUI((data && data.lead_id) ? data.lead_id : leadId);
-            })
-            .catch(function(err) {
-                console.log('Static host note (lead saved locally):', err);
-                showSuccessUI(leadId);
-            });
+            // 3. Attempt async server post in background
+            var formAction = form.getAttribute('action') || 'controller/home-form.php';
+            try {
+                fetch(formAction, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).catch(function() {});
+            } catch(err) {}
+
+            return false;
         });
     });
 });
