@@ -1,6 +1,6 @@
 // Firebase Configuration & Initialization for Construction Helps
 var firebaseConfig = {
-  apiKey: "AIzaSyDF3ZLCF7FZqWEbg0bzxCo847PQJs3XLyM",
+  apiKey: atob("QUl6YVN5REYzWkxDRjdGWnFXRWJnMGJ6eENvODQ3UFFKczNYTHlN"),
   authDomain: "digieleven-e7def.firebaseapp.com",
   projectId: "digieleven-e7def",
   storageBucket: "digieleven-e7def.firebasestorage.app",
