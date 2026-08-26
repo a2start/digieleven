@@ -1032,6 +1032,12 @@
                     </div>
                     <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">Enter one or more email addresses separated by comma. Full candidate details will be emailed here instantly.</small>
                 </div>
+
+                <div style="margin-top: 12px; text-align: right;">
+                    <button type="button" class="btn-menu-trigger" style="font-size: 12px; padding: 5px 12px; border-color: #cbd5e1; background: #ffffff;" id="btnTestAdminEmail" onclick="sendTestEmail('admin')">
+                        <i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email
+                    </button>
+                </div>
             </div>
 
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 18px;">
@@ -1073,11 +1079,17 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 0;">
+                <div class="form-group" style="margin-bottom: 8px;">
                     <label for="candidateEmailNotes">Custom Note / Advice in Candidate Email</label>
                     <div class="input-wrap">
                         <textarea id="candidateEmailNotes" class="form-input" rows="3" style="padding: 10px 14px; font-family: inherit; font-size: 13px; line-height: 1.5;" placeholder="An advisor from Construction Helps will call you shortly to confirm your booking slot and test centre details."></textarea>
                     </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <button type="button" class="btn-menu-trigger" style="font-size: 12px; padding: 5px 12px; border-color: #cbd5e1; background: #ffffff;" id="btnTestCandidateEmail" onclick="sendTestEmail('candidate')">
+                        <i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email
+                    </button>
                 </div>
             </div>
 
@@ -1789,6 +1801,63 @@ function handleSaveEmailSettings(e) {
         closeModal('emailSettingsModal');
         showToast('Email settings saved successfully!');
     }
+}
+
+function sendTestEmail(type) {
+    var adminEmails = document.getElementById('adminNotifyEmails').value.trim();
+    var fromEmail = document.getElementById('fromEmailAddress').value.trim();
+    var fromName = document.getElementById('fromDisplayName').value.trim();
+    var notes = document.getElementById('candidateEmailNotes').value.trim();
+    var btn = type === 'admin' ? document.getElementById('btnTestAdminEmail') : document.getElementById('btnTestCandidateEmail');
+
+    var targetEmail = '';
+    if (type === 'admin') {
+        var list = adminEmails.split(',');
+        targetEmail = list[0].trim();
+    } else {
+        targetEmail = prompt('Enter candidate email address to receive the test confirmation:', fromEmail);
+        if (!targetEmail) return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending test...';
+    }
+
+    var bodyData = new FormData();
+    bodyData.append('type', type);
+    bodyData.append('target_email', targetEmail);
+    bodyData.append('from_email', fromEmail);
+    bodyData.append('from_name', fromName);
+    bodyData.append('candidate_email_notes', notes);
+
+    fetch('../controller/test-email.php', {
+        method: 'POST',
+        body: bodyData
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = type === 'admin' 
+                ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
+                : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+        }
+        if (data.success) {
+            showToast('Test email sent successfully to ' + targetEmail);
+        } else {
+            alert('Notice: ' + (data.message || 'Could not send email.'));
+        }
+    })
+    .catch(function(err) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = type === 'admin' 
+                ? '<i class="fa-solid fa-paper-plane" style="color: var(--primary);"></i> Send Test Admin Alert Email'
+                : '<i class="fa-solid fa-envelope-circle-check" style="color: #059669;"></i> Send Test Candidate Acknowledgment Email';
+        }
+        showToast('Test triggered for ' + targetEmail);
+    });
 }
 
 // Data management & Real-time Live Firestore Sync
