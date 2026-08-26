@@ -357,7 +357,7 @@
                     <label for="adminUsername">Username</label>
                     <div class="input-group">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="adminUsername" class="form-control" placeholder="admin" required value="admin" autofocus>
+                        <input type="text" id="adminUsername" class="form-control" placeholder="admin" required autofocus>
                     </div>
                 </div>
 
@@ -365,7 +365,7 @@
                     <label for="adminPassword">Password</label>
                     <div class="input-group">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="adminPassword" class="form-control" placeholder="admin123" required>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="Enter password" required>
                     </div>
                 </div>
 
@@ -376,7 +376,7 @@
         </div>
 
         <div style="background: #f8fafc; padding: 14px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
-            Default Credentials: <code>admin</code> / <code>admin123</code> &bull; <a href="../index.html" style="color: #104cba; text-decoration: none;">Return to Website</a>
+            <span id="loginHint">Default: <code>admin</code> / <code>admin123</code></span> &bull; <a href="../index.html" style="color: #104cba; text-decoration: none;">Return to Website</a>
         </div>
     </div>
 </div>
@@ -388,6 +388,7 @@
             <i class="fa-solid fa-helmet-safety"></i> Construction Helps Admin Dashboard
         </a>
         <div class="navbar-nav">
+            <button onclick="openSettingsModal()" class="btn-nav" style="background: rgba(255,255,255,0.25);"><i class="fa-solid fa-key"></i> Change Login Info</button>
             <a href="../index.html" target="_blank" class="btn-nav"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Website</a>
             <button onclick="exportToCSV()" class="btn-nav"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
             <button onclick="handleLogout()" class="btn-nav" style="background: #dc2626;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
@@ -395,6 +396,10 @@
     </nav>
 
     <div class="container-fluid">
+        <div id="alertBanner" style="display: none; background: #dcfce7; color: #166534; padding: 12px 18px; border-radius: 6px; margin-bottom: 20px; font-size: 14px;">
+            <i class="fa-solid fa-circle-check"></i> <span id="alertBannerMsg"></span>
+        </div>
+
         <!-- Summary Stats -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -477,16 +482,67 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title"><i class="fa-solid fa-id-card"></i> Candidate Submission Details</h3>
-            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <button class="close-modal" onclick="closeModal('detailsModal')">&times;</button>
         </div>
         <div id="modalBody"></div>
         <div style="text-align: right; margin-top: 20px;">
-            <button type="button" class="btn-nav" style="background: #64748b; border: none;" onclick="closeModal()">Close</button>
+            <button type="button" class="btn-nav" style="background: #64748b; border: none;" onclick="closeModal('detailsModal')">Close</button>
         </div>
     </div>
 </div>
 
+<!-- Change Credentials Modal -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content" style="max-width: 480px;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-key"></i> Change Admin Login Credentials</h3>
+            <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
+        </div>
+        <form onsubmit="handleSaveCredentials(event)">
+            <div id="settingsError" style="display: none; background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;"></div>
+            
+            <div class="form-group">
+                <label for="newUsername">New Admin Username / Login ID *</label>
+                <input type="text" id="newUsername" class="form-control" required style="padding-left: 12px;">
+            </div>
+
+            <div class="form-group">
+                <label for="newPassword">New Password *</label>
+                <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required style="padding-left: 12px;">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm New Password *</label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat new password" required style="padding-left: 12px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-nav" style="background: #64748b; border: none;" onclick="closeModal('settingsModal')">Cancel</button>
+                <button type="submit" class="btn-submit" style="width: auto; padding: 8px 18px; font-size: 14px;">Save New Credentials</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+// Credentials Management
+function getAdminCredentials() {
+    try {
+        var raw = localStorage.getItem('digieleven_admin_creds');
+        if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.user && parsed.pass) {
+                return parsed;
+            }
+        }
+    } catch(e) {}
+    return { user: 'admin', pass: 'admin123' };
+}
+
+function setAdminCredentials(user, pass) {
+    localStorage.setItem('digieleven_admin_creds', JSON.stringify({ user: user, pass: pass }));
+}
+
 // Authentication check
 function checkAuth() {
     var isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
@@ -497,6 +553,8 @@ function checkAuth() {
     } else {
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboardScreen').style.display = 'none';
+        var creds = getAdminCredentials();
+        document.getElementById('adminUsername').value = creds.user;
     }
 }
 
@@ -504,21 +562,64 @@ function handleLogin(e) {
     e.preventDefault();
     var user = document.getElementById('adminUsername').value.trim();
     var pass = document.getElementById('adminPassword').value.trim();
+    var currentCreds = getAdminCredentials();
 
-    if (user === 'admin' && pass === 'admin123') {
+    if (user === currentCreds.user && pass === currentCreds.pass) {
         sessionStorage.setItem('admin_authenticated', 'true');
         document.getElementById('loginError').style.display = 'none';
         checkAuth();
     } else {
         var err = document.getElementById('loginError');
         err.style.display = 'flex';
-        document.getElementById('loginErrorMsg').innerText = 'Invalid username or password. (Default: admin / admin123)';
+        document.getElementById('loginErrorMsg').innerText = 'Invalid username or password. Please try again.';
     }
 }
 
 function handleLogout() {
     sessionStorage.removeItem('admin_authenticated');
     checkAuth();
+}
+
+function openSettingsModal() {
+    var creds = getAdminCredentials();
+    document.getElementById('newUsername').value = creds.user;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    document.getElementById('settingsError').style.display = 'none';
+    document.getElementById('settingsModal').classList.add('active');
+}
+
+function handleSaveCredentials(e) {
+    e.preventDefault();
+    var user = document.getElementById('newUsername').value.trim();
+    var pass = document.getElementById('newPassword').value.trim();
+    var confirm = document.getElementById('confirmPassword').value.trim();
+    var errBox = document.getElementById('settingsError');
+
+    if (!user) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Username cannot be empty.';
+        return;
+    }
+    if (pass.length < 4) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'Password must be at least 4 characters long.';
+        return;
+    }
+    if (pass !== confirm) {
+        errBox.style.display = 'block';
+        errBox.innerText = 'New passwords do not match. Please verify.';
+        return;
+    }
+
+    setAdminCredentials(user, pass);
+    closeModal('settingsModal');
+
+    var alertBanner = document.getElementById('alertBanner');
+    var alertMsg = document.getElementById('alertBannerMsg');
+    alertMsg.innerText = 'Admin login ID and password updated successfully! Next time log in with your new credentials.';
+    alertBanner.style.display = 'block';
+    setTimeout(function() { alertBanner.style.display = 'none'; }, 6000);
 }
 
 // Data management
@@ -537,7 +638,6 @@ function saveSubmissions(list) {
 }
 
 function loadSubmissions() {
-    // Try fetching from submissions.json if present
     fetch('../data/submissions.json')
         .then(function(res) { return res.ok ? res.json() : null; })
         .then(function(serverData) {
@@ -677,13 +777,15 @@ function viewDetails(data) {
     document.getElementById('detailsModal').classList.add('active');
 }
 
-function closeModal() {
-    document.getElementById('detailsModal').classList.remove('active');
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
 }
 
 window.onclick = function(event) {
-    var modal = document.getElementById('detailsModal');
-    if (event.target == modal) closeModal();
+    var dModal = document.getElementById('detailsModal');
+    var sModal = document.getElementById('settingsModal');
+    if (event.target == dModal) closeModal('detailsModal');
+    if (event.target == sModal) closeModal('settingsModal');
 }
 
 function exportToCSV() {
